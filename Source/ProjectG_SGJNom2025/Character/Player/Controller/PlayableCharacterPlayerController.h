@@ -32,4 +32,31 @@ protected:
 
 	void Move(const FInputActionValue& InputActionValue);
 	void Look(const FInputActionValue& InputActionValue);
+
+
+	// ----- Blinking -----
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> BlinkAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Blinking")
+	TSubclassOf<UUserWidget> BlinkOverlayClass;
+
+	// Минимальная длительность моргания
+	UPROPERTY(EditDefaultsOnly, Category = "Blinking")
+	float MinBlinkDuration = 1.f;
+
+private:
+	void BlinkStart();
+	void BlinkEnd();
+
+	UPROPERTY()
+	UUserWidget* BlinkOverlay;
+
+	// Флаг активного моргания
+	bool bIsBlinking = false;
+
+	// Время, когда моргание началось
+	float BlinkStartTime = 0.f;
 };
