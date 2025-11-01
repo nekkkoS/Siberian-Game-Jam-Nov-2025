@@ -3,6 +3,7 @@
 #include "PlayableCharacterPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
 
 void APlayableCharacterPlayerController::BeginPlay()
 {
@@ -17,6 +18,13 @@ void APlayableCharacterPlayerController::BeginPlay()
 			Subsystem->AddMappingContext(PlayerMappingContext, 0);
 		}
 	}
+
+	// Виджет затемнения
+	if (BlinkOverlayClass)
+	{
+		BlinkOverlay = CreateWidget<UUserWidget>(this, BlinkOverlayClass);
+		checkf(BlinkOverlay, TEXT("Failed to create Widget"));
+	}
 }
 
 void APlayableCharacterPlayerController::SetupInputComponent()
@@ -29,6 +37,10 @@ void APlayableCharacterPlayerController::SetupInputComponent()
 	                                   &APlayableCharacterPlayerController::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this,
 	                                   &APlayableCharacterPlayerController::Look);
+	EnhancedInputComponent->BindAction(BlinkAction, ETriggerEvent::Started, this,
+									   &APlayableCharacterPlayerController::BlinkStart);
+	EnhancedInputComponent->BindAction(BlinkAction, ETriggerEvent::Completed, this,
+									   &APlayableCharacterPlayerController::BlinkEnd);
 }
 
 void APlayableCharacterPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -59,5 +71,47 @@ void APlayableCharacterPlayerController::Look(const FInputActionValue& InputActi
 
 		AddYawInput(ScaledX);
 		AddPitchInput(ScaledY);
+	}
+}
+
+void APlayableCharacterPlayerController::BlinkStart()
+{
+	if (!bIsBlinking && BlinkOverlay)
+	{
+		bIsBlinking = true;
+		BlinkStartTime = GetWorld()->GetTimeSeconds();
+
+		if (!BlinkOverlay->IsInViewport())
+			BlinkOverlay->AddToViewport();
+		
+	}
+}
+
+void APlayableCharacterPlayerController::BlinkEnd()
+{
+	if (bIsBlinking)
+	{
+		const float CurrentTime = GetWorld()->GetTimeSeconds();
+		const float ElapsedTime = CurrentTime - BlinkStartTime;
+
+		if (ElapsedTime >= MinBlinkDuration)
+		{
+			if (BlinkOverlay && BlinkOverlay->IsInViewport())
+				BlinkOverlay->RemoveFromParent();
+			
+			bIsBlinking = false;
+		}
+		else
+		{
+			const float Delay = MinBlinkDuration - ElapsedTime;
+			FTimerHandle TimerHandle;
+			GetWorldTimerManager().SetTimer(TimerHandle, [this]()
+			{
+				if (BlinkOverlay && BlinkOverlay->IsInViewport())
+					BlinkOverlay->RemoveFromParent();
+				
+				bIsBlinking = false;
+			}, Delay, false);
+		}
 	}
 }
