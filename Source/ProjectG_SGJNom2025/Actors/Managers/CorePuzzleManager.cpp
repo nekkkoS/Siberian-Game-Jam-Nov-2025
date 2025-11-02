@@ -4,6 +4,7 @@
 
 #include "../../Character/Player/PlayableCharacter.h"
 #include "../../Interfaces/BlinkingProviderInterface.h"
+#include "../../Interfaces/PuzzleChipProviderInterface.h"
 #include "../../UI/Eyesight/EyesightOverlayWidget.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -32,13 +33,32 @@ void ACorePuzzleManager::BeginPlay()
 		PuzzleBoxTrigger->OnComponentEndOverlap.AddDynamic(this, &ACorePuzzleManager::OnPuzzleBoxTriggerEndOverlap);
 	}
 
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	
-	if (IBlinkingProviderInterface* BlinkingInterface = Cast<IBlinkingProviderInterface>(PlayerController))
+	//PlayerControllerRef = UGameplayStatics::GetPlayerController(this, 0);
+
+	/*if (IBlinkingProviderInterface* BlinkingInterface = Cast<IBlinkingProviderInterface>(PlayerControllerRef))
 	{
-		BlinkingInterface->ProvideOnEyesightOverlayReadyDelegate().AddUObject(
-			this, &ACorePuzzleManager::OnEyesightWidgetReady);
+		BlinkingInterface->ProvideOnEyesightOverlayReadyDelegate().
+		AddUObject(this, &ACorePuzzleManager::OnEyesightWidgetReady);
+		
+		BlinkingInterface->ProvideOnBlinkingEndedDelegate()
+		.AddUObject(this, &ACorePuzzleManager::OnBlinkEnded);
+	}*/
+
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	{
+		BlinkingProviderInterface.SetObject(PC);
+		BlinkingProviderInterface.SetInterface(Cast<IBlinkingProviderInterface>(PC));
+
+		BlinkingProviderInterface->ProvideOnEyesightOverlayReadyDelegate()
+		.AddUObject(this, &ACorePuzzleManager::OnEyesightWidgetReady);
+		BlinkingProviderInterface->ProvideOnBlinkingEndedDelegate()
+		.AddUObject(this, &ACorePuzzleManager::OnBlinkEnded);
 	}
+}
+
+void ACorePuzzleManager::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void ACorePuzzleManager::StartCheckingIfCanSpawnPuzzleChip()
@@ -52,11 +72,6 @@ void ACorePuzzleManager::StartCheckingIfCanSpawnPuzzleChip()
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("Start check if can spawn puzzle chip."));
-}
-
-void ACorePuzzleManager::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ACorePuzzleManager::OnPuzzleBoxTriggerStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -77,9 +92,9 @@ void ACorePuzzleManager::OnPuzzleBoxTriggerStartOverlap(UPrimitiveComponent* Ove
 				if (PlayerInTriggerTime >= TimeToPossibilityForPuzzleChipSpawn && PlayerInTriggerTimerHandle.IsValid())
 				{
 					bCanActivatePuzzleChipSpawn = true;
-					GetWorld()->GetTimerManager().SetTimer(CheckIfCanSpawnPuzzleChipTimerHandle, this,
+					/*GetWorld()->GetTimerManager().SetTimer(CheckIfCanSpawnPuzzleChipTimerHandle, this,
 					                                       &ACorePuzzleManager::StartCheckingIfCanSpawnPuzzleChip,
-					                                       CheckCanSpawnPuzzleChipTickRate, true);
+					                                       CheckCanSpawnPuzzleChipTickRate, true);*/
 
 					GetWorld()->GetTimerManager().ClearTimer(PlayerInTriggerTimerHandle);
 				}
@@ -111,11 +126,43 @@ void ACorePuzzleManager::OnEyesightWidgetReady(UEyesightOverlayWidget* EyesightW
 	{
 		EyesightWidget->OnBlurEffectCriticalThresholdReachedDelegate.AddUObject(
 			this, &ACorePuzzleManager::BlurCriticalThresholdReached);
+
+		bEyeSightWidgetReady = true;
 	}
 }
 
-void ACorePuzzleManager::BlurCriticalThresholdReached()
+void ACorePuzzleManager::OnBlinkEnded()
 {
-	// TODO: Handle spawn puzzle chip logic here.
+	if (!bBlurThresholdReached || !PlayerCharacterRef.IsValid())
+	{
+		return;
+	}
+	
+	if (IPuzzleChipProviderInterface* PuzzleChipProvider = Cast<IPuzzleChipProviderInterface>(PuzzleActorRef))
+	{
+		// Call method, when player ends blinking
+		PuzzleChipProvider->ShowRandomPuzzleChip();
+		// Also should reset local BlurThreshold local bool
+		bBlurThresholdReached = false;
+		
+		// Also set bThreshold from widget to false here
+		if (bEyeSightWidgetReady)
+		{
+			BlinkingProviderInterface->Execute_GetEyesightOverlayWidget(BlinkingProviderInterface.GetObject())
+			->SetBlurEffectThresholdReached(false);
+		}
+	}
+}
+
+// Need to get bool value, that threshold is reached, and save it here.
+void ACorePuzzleManager::BlurCriticalThresholdReached(bool bReached)
+{
+	// !NEED TESTS!
+	// TODO: Blur threshold is reached, can spawn puzzle chip. Then wait again till blur threshold is reached again.
+	// Add bool to reveal chip control.
 	UE_LOG(LogTemp, Warning, TEXT("Blur critical threshold reached in Puzzle Manager."));
+
+	// Here set BlurThreshold local bool to value received from delegate
+	bBlurThresholdReached = bReached;
+	UE_LOG(LogTemp, Warning, TEXT("bBlurThresholdReached in PuzzleManager: %s"), bBlurThresholdReached ? TEXT("true") : TEXT("false"));
 }

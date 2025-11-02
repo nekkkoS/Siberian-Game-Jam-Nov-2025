@@ -49,7 +49,7 @@ void UEyesightOverlayWidget::BlurTimerTick()
 	if (!bBlurEffectThresholdReached && BackgroundBlur->GetBlurStrength() >= BlurThresholdCriticalValue * BlurScreenTillThisStrength)
 	{
 		bBlurEffectThresholdReached = true;
-		OnBlurEffectCriticalThresholdReachedDelegate.Broadcast();
+		OnBlurEffectCriticalThresholdReachedDelegate.Broadcast(bBlurEffectThresholdReached);
 	}
 }
 
@@ -57,6 +57,8 @@ void UEyesightOverlayWidget::OnBlinkingEnded()
 {
 	ResetBlurEffect();
 	ResetBlurTimer();
+	bBlurEffectThresholdReached = false;
+	//OnBlurEffectCriticalThresholdReachedDelegate.Broadcast(bBlurEffectThresholdReached);
 	StartBlurEffectTimer();
 }
 

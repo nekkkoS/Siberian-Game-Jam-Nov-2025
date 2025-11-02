@@ -126,7 +126,6 @@ void APlayableCharacterPlayerController::BlinkEnd()
 				
 				bIsBlinking = false;
 				OnBlinkingEndedDelegate.Broadcast();
-				EyesightOverlayWidget->SetBlurEffectThresholdReached(false);
 			}, Delay, false);
 		}
 	}

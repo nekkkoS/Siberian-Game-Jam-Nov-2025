@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "EyesightOverlayWidget.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnBlurEffectCriticalThresholdReachedSignature);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnBlurEffectCriticalThresholdReachedSignature, bool /* bReached */);
 
 class UImage;
 

@@ -67,9 +67,15 @@ protected:
 	                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 private:
-	UFUNCTION()
-	void OnEyesightWidgetReady(UEyesightOverlayWidget* EyesightWidget);
+	bool bBlurThresholdReached = false;
+	bool bEyeSightWidgetReady = false;
 	
 	UFUNCTION()
-	void BlurCriticalThresholdReached();
+	void OnEyesightWidgetReady(UEyesightOverlayWidget* EyesightWidget);
+
+	UFUNCTION()
+	void OnBlinkEnded();
+	
+	UFUNCTION()
+	void BlurCriticalThresholdReached(bool bReached);
 };
