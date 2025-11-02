@@ -47,6 +47,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Blinking")
 	float MinBlinkDuration = 1.f;
 
+
+	UPROPERTY(EditDefaultsOnly, Category = "Overlay | Blinking")
+	TSubclassOf<class UEyesightOverlayWidget> EyesightOverlayWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UEyesightOverlayWidget> EyesightOverlayWidget;
+
 private:
 	void BlinkStart();
 	void BlinkEnd();
