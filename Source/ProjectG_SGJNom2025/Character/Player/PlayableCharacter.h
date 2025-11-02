@@ -18,5 +18,18 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
+
+private:
+	UPROPERTY()
+	TWeakObjectPtr<APlayerController> PlayerControllerRef;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TObjectPtr<class UAIPerceptionStimuliSourceComponent> StimuliSourceComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TObjectPtr<class USpringArmComponent> SpringArmComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TObjectPtr<class UCameraComponent> CameraComponent;
 };
