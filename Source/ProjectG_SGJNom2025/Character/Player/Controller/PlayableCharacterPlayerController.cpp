@@ -74,19 +74,7 @@ void APlayableCharacterPlayerController::Move(const FInputActionValue& InputActi
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
 
-		// Воспроизведение шагов
-		if (APlayableCharacter* PlayableChar = Cast<APlayableCharacter>(ControlledPawn))
-		{
-			const float CurrentTime = GetWorld()->GetTimeSeconds();
-
-			if (PlayableChar->FootstepAudioComponent && PlayableChar->FootstepSound
-				&& (CurrentTime - PlayableChar->LastFootstepTime) >= PlayableChar->FootstepInterval)
-			{
-				PlayableChar->FootstepAudioComponent->SetSound(PlayableChar->FootstepSound);
-				PlayableChar->FootstepAudioComponent->Play();
-				PlayableChar->LastFootstepTime = CurrentTime;
-			}
-		}
+		PlayFootStepSound(ControlledPawn);
 	}
 }
 
@@ -96,6 +84,23 @@ void APlayableCharacterPlayerController::Look(const FInputActionValue& InputActi
 	
 	AddYawInput(LookAxisVector.X * MouseSensitivity);
 	AddPitchInput(LookAxisVector.Y * MouseSensitivity);
+}
+
+void APlayableCharacterPlayerController::PlayFootStepSound(APawn* ControlledPawn) const
+{
+	APlayableCharacter* PlayableChar = Cast<APlayableCharacter>(ControlledPawn);
+	if (!PlayableChar)
+		return;
+	
+	const float CurrentTime = GetWorld()->GetTimeSeconds();
+
+	if (PlayableChar->FootstepAudioComponent && PlayableChar->FootstepSound
+		&& (CurrentTime - PlayableChar->LastFootstepTime) >= PlayableChar->FootstepInterval)
+	{
+		PlayableChar->FootstepAudioComponent->SetSound(PlayableChar->FootstepSound);
+		PlayableChar->FootstepAudioComponent->Play();
+		PlayableChar->LastFootstepTime = CurrentTime;
+	}
 }
 
 void APlayableCharacterPlayerController::BlinkStart()
