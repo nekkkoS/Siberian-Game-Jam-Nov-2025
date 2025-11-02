@@ -112,6 +112,7 @@ void APlayableCharacterPlayerController::BlinkEnd()
 				BlinkOverlay->RemoveFromParent();
 			
 			bIsBlinking = false;
+			OnBlinkingEndedDelegate.Broadcast();
 		}
 		else
 		{
@@ -123,7 +124,13 @@ void APlayableCharacterPlayerController::BlinkEnd()
 					BlinkOverlay->RemoveFromParent();
 				
 				bIsBlinking = false;
+				OnBlinkingEndedDelegate.Broadcast();
 			}, Delay, false);
 		}
 	}
+}
+
+FOnBlinkingEndedSignature& APlayableCharacterPlayerController::ProvideOnBlinkingEndedDelegate()
+{
+	return OnBlinkingEndedDelegate;
 }

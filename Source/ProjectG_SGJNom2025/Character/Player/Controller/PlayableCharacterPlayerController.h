@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "../../../Interfaces/BlinkingProviderInterface.h"
 #include "PlayableCharacterPlayerController.generated.h"
 
 class UInputAction;
@@ -13,7 +14,7 @@ struct FInputActionValue;
  * 
  */
 UCLASS()
-class PROJECTG_SGJNOM2025_API APlayableCharacterPlayerController : public APlayerController
+class PROJECTG_SGJNOM2025_API APlayableCharacterPlayerController : public APlayerController, public IBlinkingProviderInterface
 {
 	GENERATED_BODY()
 
@@ -57,6 +58,7 @@ protected:
 private:
 	void BlinkStart();
 	void BlinkEnd();
+	virtual FOnBlinkingEndedSignature& ProvideOnBlinkingEndedDelegate() override;
 
 	UPROPERTY()
 	UUserWidget* BlinkOverlay;
@@ -66,4 +68,6 @@ private:
 
 	// Время, когда моргание началось
 	float BlinkStartTime = 0.f;
+
+	FOnBlinkingEndedSignature OnBlinkingEndedDelegate;
 };

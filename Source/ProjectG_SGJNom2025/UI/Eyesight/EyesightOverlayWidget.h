@@ -37,7 +37,7 @@ protected:
 	bool BlurTimerShouldLoop = true;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Eyesight | Blink")
-	float BlurTimerFirstDelay = -1.0f;
+	float BlurTimerFirstDelay = 10.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Eyesight | Blink")
 	float BlurIncreaseWithEachTimerTick = 20.0f;
@@ -48,8 +48,12 @@ protected:
 	virtual void NativeConstruct() override;
 	void BlurTimerTick();
 
+	UFUNCTION()
+	void OnBlinkingEnded();
+
 private:
 	FTimerHandle BlurTimerHandle;
+	TScriptInterface<class IBlinkingProviderInterface> BlinkingProviderInterface;
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UUserWidget> BlinkPrompt;
