@@ -4,6 +4,7 @@
 #include "PlayableCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/AudioComponent.h"
 #include "Controller/PlayableCharacterPlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -21,6 +22,10 @@ APlayableCharacter::APlayableCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 	CameraComponent->bUsePawnControlRotation = true;
+
+	FootstepAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("FootstepAudioComponent"));
+	FootstepAudioComponent->SetupAttachment(RootComponent);
+	FootstepAudioComponent->bAutoActivate = false;
 }
 
 void APlayableCharacter::BeginPlay()

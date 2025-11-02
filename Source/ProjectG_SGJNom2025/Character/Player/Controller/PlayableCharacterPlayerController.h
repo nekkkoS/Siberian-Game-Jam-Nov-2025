@@ -7,6 +7,7 @@
 #include "../../../Interfaces/BlinkingProviderInterface.h"
 #include "PlayableCharacterPlayerController.generated.h"
 
+class UPauseMenuWidget;
 class UInputAction;
 struct FInputActionValue;
 
@@ -70,4 +71,25 @@ private:
 	float BlinkStartTime = 0.f;
 
 	FOnBlinkingEndedSignature OnBlinkingEndedDelegate;
+	
+	// ----- Pause -----
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> PauseAction;
+
+	void OnPauseMenuToggle();
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UPauseMenuWidget> PauseMenuWidgetClass;
+
+	UPROPERTY()
+	UPauseMenuWidget* PauseMenuWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	float MouseSensitivity = 1.0f;
+
+public:
+	void SetMouseSensitivity(const float Value) { MouseSensitivity = Value; }
+	float GetMouseSensitivity() const { return MouseSensitivity; }
 };

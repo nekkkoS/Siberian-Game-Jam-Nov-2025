@@ -32,4 +32,18 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
 	TObjectPtr<class UCameraComponent> CameraComponent;
+
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	UAudioComponent* FootstepAudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	USoundBase* FootstepSound;
+
+	// Интервал между шагами
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	float FootstepInterval = 0.7f;
+
+	// Время последнего шага
+	float LastFootstepTime = 0.0f;
 };
