@@ -28,7 +28,9 @@ public class ProjectG_SGJNom2025 : ModuleRules
 			// SFX
 			"Niagara",
 			// State Tree
-			"GameplayStateTreeModule"
+			"GameplayStateTreeModule",
+			// Custom plugins
+			"n3mupySaveSystemPlugin"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
