@@ -35,6 +35,9 @@ protected:
 	void Move(const FInputActionValue& InputActionValue);
 	void Look(const FInputActionValue& InputActionValue);
 
+private:
+	void PlayFootStepSound(APawn* ControlledPawn) const;
+
 
 	// ----- Blinking -----
 
@@ -71,6 +74,7 @@ private:
 	float BlinkStartTime = 0.f;
 
 	FOnBlinkingEndedSignature OnBlinkingEndedDelegate;
+
 	
 	// ----- Pause -----
 

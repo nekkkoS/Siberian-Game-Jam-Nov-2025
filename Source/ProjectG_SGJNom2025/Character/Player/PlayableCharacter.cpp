@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/AudioComponent.h"
 #include "Controller/PlayableCharacterPlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 APlayableCharacter::APlayableCharacter()
@@ -28,9 +29,26 @@ APlayableCharacter::APlayableCharacter()
 	FootstepAudioComponent->bAutoActivate = false;
 }
 
+void APlayableCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+	ExecuteHeadBob(DeltaTime);
+}
+
+void APlayableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
 void APlayableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (CameraComponent)
+	{
+		DefaultCameraRelativeLocation = CameraComponent->GetRelativeLocation();
+	}
 }
 
 void APlayableCharacter::PossessedBy(AController* NewController)
@@ -40,12 +58,33 @@ void APlayableCharacter::PossessedBy(AController* NewController)
 	PlayerControllerRef = Cast<APlayableCharacterPlayerController>(NewController);
 }
 
-void APlayableCharacter::Tick(float DeltaTime)
+void APlayableCharacter::ExecuteHeadBob(const float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-}
+	const FVector Velocity = GetVelocity();
+	const float Speed = FVector(Velocity.X, Velocity.Y, 0.f).Size();
 
-void APlayableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (!CameraComponent)
+		return;
+	
+	if (Speed > CharacterSpeedForHeadBob && GetCharacterMovement()->IsMovingOnGround())
+	{
+		// Движение — качаем голову
+		BobTime += DeltaTime * BobFrequency;
+		const float OffsetZ = FMath::Sin(BobTime) * BobAmplitude;
+		const float OffsetY = FMath::Cos(BobTime * 0.5f) * (BobAmplitude * 0.3f);
+
+		FVector TargetLocation = DefaultCameraRelativeLocation + FVector(0.f, OffsetY, OffsetZ);
+
+		CameraComponent->SetRelativeLocation(
+			FMath::VInterpTo(CameraComponent->GetRelativeLocation(), TargetLocation, DeltaTime, BobSmoothSpeed)
+		);
+	}
+	else
+	{
+		// Стоим — возвращаем камеру на место
+		BobTime = 0.f;
+		CameraComponent->SetRelativeLocation(
+			FMath::VInterpTo(CameraComponent->GetRelativeLocation(), DefaultCameraRelativeLocation, DeltaTime, BobSmoothSpeed)
+		);
+	}
 }
