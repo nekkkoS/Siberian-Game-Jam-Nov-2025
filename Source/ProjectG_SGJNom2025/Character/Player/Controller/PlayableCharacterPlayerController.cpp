@@ -4,6 +4,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
+#include "../../../UI/Eyesight/EyesightOverlayWidget.h"
 
 void APlayableCharacterPlayerController::BeginPlay()
 {
@@ -24,6 +25,17 @@ void APlayableCharacterPlayerController::BeginPlay()
 	{
 		BlinkOverlay = CreateWidget<UUserWidget>(this, BlinkOverlayClass);
 		checkf(BlinkOverlay, TEXT("Failed to create Widget"));
+	}
+
+	if (EyesightOverlayWidgetClass)
+	{
+		EyesightOverlayWidget = CreateWidget<UEyesightOverlayWidget>(this, EyesightOverlayWidgetClass);
+		checkf(EyesightOverlayWidget, TEXT("Failed to create Widget"));
+	}
+
+	if (EyesightOverlayWidget && !EyesightOverlayWidget->IsInViewport())
+	{
+		EyesightOverlayWidget->AddToViewport();	
 	}
 }
 
@@ -100,6 +112,7 @@ void APlayableCharacterPlayerController::BlinkEnd()
 				BlinkOverlay->RemoveFromParent();
 			
 			bIsBlinking = false;
+			OnBlinkingEndedDelegate.Broadcast();
 		}
 		else
 		{
@@ -111,7 +124,13 @@ void APlayableCharacterPlayerController::BlinkEnd()
 					BlinkOverlay->RemoveFromParent();
 				
 				bIsBlinking = false;
+				OnBlinkingEndedDelegate.Broadcast();
 			}, Delay, false);
 		}
 	}
+}
+
+FOnBlinkingEndedSignature& APlayableCharacterPlayerController::ProvideOnBlinkingEndedDelegate()
+{
+	return OnBlinkingEndedDelegate;
 }
