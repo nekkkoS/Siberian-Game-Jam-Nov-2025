@@ -28,6 +28,14 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ResetBlurTimer();
+
+	UFUNCTION(BlueprintCallable)
+	void ShowBlinkHint();
+
+	UFUNCTION(BlueprintCallable)
+	void HideBlinkHint();
+
+	bool GetCanBlinkNow() const { return bCanBlinkNow; }
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Eyesight | Blink")
@@ -66,4 +74,15 @@ private:
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> VeinsImage;
+
+	bool bHasShownBlinkHint = false;
+
+	// Чтобы запретить игроку моргнуть раньше времени
+	bool bCanBlinkNow = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Eyesight | Blink")
+	TSubclassOf<UUserWidget> BlinkHintWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* BlinkHintWidget;
 };

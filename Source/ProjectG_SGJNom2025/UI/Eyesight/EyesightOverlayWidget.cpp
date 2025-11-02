@@ -33,8 +33,13 @@ void UEyesightOverlayWidget::NativeConstruct()
 void UEyesightOverlayWidget::BlurTimerTick()
 {
 	if (!BackgroundBlur)
-	{
 		return;
+
+	if (!bHasShownBlinkHint && BackgroundBlur->GetBlurStrength() == 7.0f)
+	{
+		ShowBlinkHint();
+		bHasShownBlinkHint = true;
+		bCanBlinkNow = true;
 	}
 
 	if (BackgroundBlur->GetBlurStrength() >= BlurScreenTillThisStrength)
@@ -86,5 +91,26 @@ void UEyesightOverlayWidget::ResetBlurTimer()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(BlurTimerHandle);
 		UE_LOG(LogTemp, Warning, TEXT("Blur timer is reset"));
+	}
+}
+
+void UEyesightOverlayWidget::ShowBlinkHint()
+{
+	if (!BlinkHintWidgetClass || BlinkHintWidget)
+		return;
+
+	BlinkHintWidget = CreateWidget<UUserWidget>(GetWorld(), BlinkHintWidgetClass);
+	if (BlinkHintWidget && !BlinkHintWidget->IsInViewport())
+	{
+		BlinkHintWidget->AddToViewport();
+	}
+}
+
+void UEyesightOverlayWidget::HideBlinkHint()
+{
+	if (BlinkHintWidget && BlinkHintWidget->IsInViewport())
+	{
+		BlinkHintWidget->RemoveFromParent();
+		BlinkHintWidget = nullptr;
 	}
 }

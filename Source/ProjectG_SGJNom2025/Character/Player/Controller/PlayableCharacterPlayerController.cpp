@@ -105,6 +105,12 @@ void APlayableCharacterPlayerController::PlayFootStepSound(APawn* ControlledPawn
 
 void APlayableCharacterPlayerController::BlinkStart()
 {
+	if (EyesightOverlayWidget && !EyesightOverlayWidget->GetCanBlinkNow())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Blink ignored — blur not strong enough yet"));
+		return;
+	}
+	
 	if (!bIsBlinking && BlinkOverlay)
 	{
 		bIsBlinking = true;
@@ -112,7 +118,9 @@ void APlayableCharacterPlayerController::BlinkStart()
 
 		if (!BlinkOverlay->IsInViewport())
 			BlinkOverlay->AddToViewport();
-		
+
+		if (EyesightOverlayWidget)
+			EyesightOverlayWidget->HideBlinkHint();
 	}
 }
 
