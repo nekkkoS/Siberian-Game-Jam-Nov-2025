@@ -5,6 +5,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "../../../UI/Eyesight/EyesightOverlayWidget.h"
+#include "../../../UI/PauseMenu/PauseMenuWidget.h"
+#include "Components/AudioComponent.h"
+#include "ProjectG_SGJNom2025/Character/Player/PlayableCharacter.h"
 
 void APlayableCharacterPlayerController::BeginPlay()
 {
@@ -53,6 +56,8 @@ void APlayableCharacterPlayerController::SetupInputComponent()
 									   &APlayableCharacterPlayerController::BlinkStart);
 	EnhancedInputComponent->BindAction(BlinkAction, ETriggerEvent::Completed, this,
 									   &APlayableCharacterPlayerController::BlinkEnd);
+	EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Completed, this,
+									   &APlayableCharacterPlayerController::OnPauseMenuToggle);
 }
 
 void APlayableCharacterPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -68,22 +73,29 @@ void APlayableCharacterPlayerController::Move(const FInputActionValue& InputActi
 	{
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+
+		// Воспроизведение шагов
+		if (APlayableCharacter* PlayableChar = Cast<APlayableCharacter>(ControlledPawn))
+		{
+			const float CurrentTime = GetWorld()->GetTimeSeconds();
+
+			if (PlayableChar->FootstepAudioComponent && PlayableChar->FootstepSound
+				&& (CurrentTime - PlayableChar->LastFootstepTime) >= PlayableChar->FootstepInterval)
+			{
+				PlayableChar->FootstepAudioComponent->SetSound(PlayableChar->FootstepSound);
+				PlayableChar->FootstepAudioComponent->Play();
+				PlayableChar->LastFootstepTime = CurrentTime;
+			}
+		}
 	}
 }
 
 void APlayableCharacterPlayerController::Look(const FInputActionValue& InputActionValue)
 {
 	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
-
-	if (APawn* ControlledPawn = GetPawn<APawn>())
-	{
-		// Add yaw and pitch input to the controller
-		const float ScaledX = LookAxisVector.X;
-		const float ScaledY = LookAxisVector.Y;
-
-		AddYawInput(ScaledX);
-		AddPitchInput(ScaledY);
-	}
+	
+	AddYawInput(LookAxisVector.X * MouseSensitivity);
+	AddPitchInput(LookAxisVector.Y * MouseSensitivity);
 }
 
 void APlayableCharacterPlayerController::BlinkStart()
@@ -133,4 +145,31 @@ void APlayableCharacterPlayerController::BlinkEnd()
 FOnBlinkingEndedSignature& APlayableCharacterPlayerController::ProvideOnBlinkingEndedDelegate()
 {
 	return OnBlinkingEndedDelegate;
+}
+
+void APlayableCharacterPlayerController::OnPauseMenuToggle()
+{
+	if (IsPaused())
+	{
+		SetPause(false);
+		PauseMenuWidget->RemoveFromParent();
+		SetInputMode(FInputModeGameOnly());
+		bShowMouseCursor = false;
+	}
+	else
+	{
+		SetPause(true);
+
+		if (!PauseMenuWidget && PauseMenuWidgetClass)
+		{
+			PauseMenuWidget = CreateWidget<UPauseMenuWidget>(this, PauseMenuWidgetClass);
+		}
+
+		if (PauseMenuWidget)
+		{
+			PauseMenuWidget->AddToViewport();
+			SetInputMode(FInputModeUIOnly());
+			bShowMouseCursor = true;
+		}
+	}
 }
