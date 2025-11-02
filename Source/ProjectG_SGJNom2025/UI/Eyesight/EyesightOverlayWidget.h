@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "EyesightOverlayWidget.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnBlurEffectCriticalThresholdReachedSignature);
+
 class UImage;
 
 /**
@@ -17,6 +19,8 @@ class PROJECTG_SGJNOM2025_API UEyesightOverlayWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	FOnBlurEffectCriticalThresholdReachedSignature OnBlurEffectCriticalThresholdReachedDelegate;
+
 	UFUNCTION(BlueprintCallable)
 	void SetBlinkPromptVisibility(ESlateVisibility _Visibility);
 
@@ -28,7 +32,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ResetBlurTimer();
-	
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Eyesight | Blink")
 	float BlurTimerTickRate = 5.0f;
@@ -41,9 +45,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Eyesight | Blink")
 	float BlurIncreaseWithEachTimerTick = 20.0f;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Eyesight | Blink")
 	float BlurScreenTillThisStrength = 25.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Eyesight | Blink",
+		meta = (ClampMin = 0.0f, ClampMax = 1.0f))
+	float BlurThresholdCriticalValue = 0.5f;
 
 	virtual void NativeConstruct() override;
 	void BlurTimerTick();
@@ -54,7 +62,9 @@ protected:
 private:
 	FTimerHandle BlurTimerHandle;
 	TScriptInterface<class IBlinkingProviderInterface> BlinkingProviderInterface;
-	
+
+	bool bBlurEffectThresholdReached = false;
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UUserWidget> BlinkPrompt;
 
@@ -63,7 +73,11 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> EyeImage;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> VeinsImage;
+
+public:
+	void SetBlurEffectThresholdReached(const bool bReached) { bBlurEffectThresholdReached = bReached; }
+	bool GetBlurEffectThresholdReached() const { return bBlurEffectThresholdReached; }
 };

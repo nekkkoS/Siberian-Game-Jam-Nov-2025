@@ -44,6 +44,13 @@ void UEyesightOverlayWidget::BlurTimerTick()
 
 	BackgroundBlur->SetBlurStrength(BackgroundBlur->GetBlurStrength() + BlurIncreaseWithEachTimerTick);
 	UE_LOG(LogTemp, Warning, TEXT("Blur Strength: %f"), BackgroundBlur->GetBlurStrength());
+
+	// Check if the blur strength has reached the critical threshold and broadcast the event.
+	if (!bBlurEffectThresholdReached && BackgroundBlur->GetBlurStrength() >= BlurThresholdCriticalValue * BlurScreenTillThisStrength)
+	{
+		bBlurEffectThresholdReached = true;
+		OnBlurEffectCriticalThresholdReachedDelegate.Broadcast();
+	}
 }
 
 void UEyesightOverlayWidget::OnBlinkingEnded()

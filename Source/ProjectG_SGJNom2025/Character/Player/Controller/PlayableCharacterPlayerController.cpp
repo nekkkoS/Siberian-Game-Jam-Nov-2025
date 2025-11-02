@@ -35,7 +35,8 @@ void APlayableCharacterPlayerController::BeginPlay()
 
 	if (EyesightOverlayWidget && !EyesightOverlayWidget->IsInViewport())
 	{
-		EyesightOverlayWidget->AddToViewport();	
+		EyesightOverlayWidget->AddToViewport();
+		OnEyesightOverlayReadyDelegate.Broadcast(EyesightOverlayWidget);
 	}
 }
 
@@ -125,6 +126,7 @@ void APlayableCharacterPlayerController::BlinkEnd()
 				
 				bIsBlinking = false;
 				OnBlinkingEndedDelegate.Broadcast();
+				EyesightOverlayWidget->SetBlurEffectThresholdReached(false);
 			}, Delay, false);
 		}
 	}
@@ -133,4 +135,14 @@ void APlayableCharacterPlayerController::BlinkEnd()
 FOnBlinkingEndedSignature& APlayableCharacterPlayerController::ProvideOnBlinkingEndedDelegate()
 {
 	return OnBlinkingEndedDelegate;
+}
+
+FOnEyesightOverlayReadySignature& APlayableCharacterPlayerController::ProvideOnEyesightOverlayReadyDelegate()
+{
+	return OnEyesightOverlayReadyDelegate;
+}
+
+UEyesightOverlayWidget* APlayableCharacterPlayerController::GetEyesightOverlayWidget_Implementation()
+{
+	return EyesightOverlayWidget;
 }

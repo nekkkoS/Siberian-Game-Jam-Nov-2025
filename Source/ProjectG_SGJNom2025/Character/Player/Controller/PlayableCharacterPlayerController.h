@@ -17,7 +17,7 @@ UCLASS()
 class PROJECTG_SGJNOM2025_API APlayableCharacterPlayerController : public APlayerController, public IBlinkingProviderInterface
 {
 	GENERATED_BODY()
-
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -58,7 +58,6 @@ protected:
 private:
 	void BlinkStart();
 	void BlinkEnd();
-	virtual FOnBlinkingEndedSignature& ProvideOnBlinkingEndedDelegate() override;
 
 	UPROPERTY()
 	UUserWidget* BlinkOverlay;
@@ -70,4 +69,10 @@ private:
 	float BlinkStartTime = 0.f;
 
 	FOnBlinkingEndedSignature OnBlinkingEndedDelegate;
+	FOnEyesightOverlayReadySignature OnEyesightOverlayReadyDelegate;
+
+public:
+	virtual UEyesightOverlayWidget* GetEyesightOverlayWidget_Implementation() override;
+	virtual FOnBlinkingEndedSignature& ProvideOnBlinkingEndedDelegate() override;
+	virtual FOnEyesightOverlayReadySignature& ProvideOnEyesightOverlayReadyDelegate() override;
 };
