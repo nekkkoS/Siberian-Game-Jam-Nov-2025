@@ -216,7 +216,6 @@ Backup/*
 *.spp
 *.xcf
 *.assbin
-*.png
 
 ## Audio (do not ignore FMOD assets)
 *.wav
