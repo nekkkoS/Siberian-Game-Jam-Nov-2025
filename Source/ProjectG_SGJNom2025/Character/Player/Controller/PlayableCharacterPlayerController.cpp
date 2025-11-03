@@ -5,6 +5,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "../../../UI/Eyesight/EyesightOverlayWidget.h"
+#include "../../../UI/PauseMenu/PauseMenuWidget.h"
+#include "Components/AudioComponent.h"
+#include "ProjectG_SGJNom2025/Character/Player/PlayableCharacter.h"
 
 void APlayableCharacterPlayerController::BeginPlay()
 {
@@ -54,6 +57,10 @@ void APlayableCharacterPlayerController::SetupInputComponent()
 									   &APlayableCharacterPlayerController::BlinkStart);
 	EnhancedInputComponent->BindAction(BlinkAction, ETriggerEvent::Completed, this,
 									   &APlayableCharacterPlayerController::BlinkEnd);
+	EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Completed, this,
+									   &APlayableCharacterPlayerController::OnPauseMenuToggle);
+	EnhancedInputComponent->BindAction(DeathAction, ETriggerEvent::Started, this,
+									   &APlayableCharacterPlayerController::OnDeathTrigger);
 }
 
 void APlayableCharacterPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -69,26 +76,44 @@ void APlayableCharacterPlayerController::Move(const FInputActionValue& InputActi
 	{
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+
+		PlayFootStepSound(ControlledPawn);
 	}
 }
 
 void APlayableCharacterPlayerController::Look(const FInputActionValue& InputActionValue)
 {
 	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
+	
+	AddYawInput(LookAxisVector.X * MouseSensitivity);
+	AddPitchInput(LookAxisVector.Y * MouseSensitivity);
+}
 
-	if (APawn* ControlledPawn = GetPawn<APawn>())
+void APlayableCharacterPlayerController::PlayFootStepSound(APawn* ControlledPawn) const
+{
+	APlayableCharacter* PlayableChar = Cast<APlayableCharacter>(ControlledPawn);
+	if (!PlayableChar)
+		return;
+	
+	const float CurrentTime = GetWorld()->GetTimeSeconds();
+
+	if (PlayableChar->FootstepAudioComponent && PlayableChar->FootstepSound
+		&& (CurrentTime - PlayableChar->LastFootstepTime) >= PlayableChar->FootstepInterval)
 	{
-		// Add yaw and pitch input to the controller
-		const float ScaledX = LookAxisVector.X;
-		const float ScaledY = LookAxisVector.Y;
-
-		AddYawInput(ScaledX);
-		AddPitchInput(ScaledY);
+		PlayableChar->FootstepAudioComponent->SetSound(PlayableChar->FootstepSound);
+		PlayableChar->FootstepAudioComponent->Play();
+		PlayableChar->LastFootstepTime = CurrentTime;
 	}
 }
 
 void APlayableCharacterPlayerController::BlinkStart()
 {
+	if (EyesightOverlayWidget && !EyesightOverlayWidget->GetCanBlinkNow())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Blink ignored — blur not strong enough yet"));
+		return;
+	}
+	
 	if (!bIsBlinking && BlinkOverlay)
 	{
 		bIsBlinking = true;
@@ -96,7 +121,9 @@ void APlayableCharacterPlayerController::BlinkStart()
 
 		if (!BlinkOverlay->IsInViewport())
 			BlinkOverlay->AddToViewport();
-		
+
+		if (EyesightOverlayWidget)
+			EyesightOverlayWidget->HideBlinkHint();
 	}
 }
 
@@ -144,4 +171,37 @@ FOnEyesightOverlayReadySignature& APlayableCharacterPlayerController::ProvideOnE
 UEyesightOverlayWidget* APlayableCharacterPlayerController::GetEyesightOverlayWidget_Implementation()
 {
 	return EyesightOverlayWidget;
+}
+
+void APlayableCharacterPlayerController::OnPauseMenuToggle()
+{
+	if (IsPaused())
+	{
+		SetPause(false);
+		PauseMenuWidget->RemoveFromParent();
+		SetInputMode(FInputModeGameOnly());
+		bShowMouseCursor = false;
+	}
+	else
+	{
+		SetPause(true);
+
+		if (!PauseMenuWidget && PauseMenuWidgetClass)
+		{
+			PauseMenuWidget = CreateWidget<UPauseMenuWidget>(this, PauseMenuWidgetClass);
+		}
+
+		if (PauseMenuWidget)
+		{
+			PauseMenuWidget->AddToViewport();
+			SetInputMode(FInputModeUIOnly());
+			bShowMouseCursor = true;
+		}
+	}
+}
+
+void APlayableCharacterPlayerController::OnDeathTrigger()
+{
+	if (APlayableCharacter* PC = Cast<APlayableCharacter>(GetPawn()))
+		PC->Die();
 }

@@ -7,6 +7,7 @@
 #include "../../../Interfaces/BlinkingProviderInterface.h"
 #include "PlayableCharacterPlayerController.generated.h"
 
+class UPauseMenuWidget;
 class UInputAction;
 struct FInputActionValue;
 
@@ -33,6 +34,9 @@ protected:
 
 	void Move(const FInputActionValue& InputActionValue);
 	void Look(const FInputActionValue& InputActionValue);
+
+private:
+	void PlayFootStepSound(APawn* ControlledPawn) const;
 
 
 	// ----- Blinking -----
@@ -70,9 +74,37 @@ private:
 
 	FOnBlinkingEndedSignature OnBlinkingEndedDelegate;
 	FOnEyesightOverlayReadySignature OnEyesightOverlayReadyDelegate;
+	
+	// ----- Pause -----
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> PauseAction;
+
+	void OnPauseMenuToggle();
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UPauseMenuWidget> PauseMenuWidgetClass;
+
+	UPROPERTY()
+	UPauseMenuWidget* PauseMenuWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	float MouseSensitivity = 1.0f;
 
 public:
 	virtual UEyesightOverlayWidget* GetEyesightOverlayWidget_Implementation() override;
 	virtual FOnBlinkingEndedSignature& ProvideOnBlinkingEndedDelegate() override;
 	virtual FOnEyesightOverlayReadySignature& ProvideOnEyesightOverlayReadyDelegate() override;
+	void SetMouseSensitivity(const float Value) { MouseSensitivity = Value; }
+	float GetMouseSensitivity() const { return MouseSensitivity; }
+
+	
+	// ----- Смерть -----
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> DeathAction;
+
+	void OnDeathTrigger();
 };
