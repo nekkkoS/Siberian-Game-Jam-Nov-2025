@@ -5,6 +5,7 @@
 #include "Components/BackgroundBlur.h"
 #include "Kismet/GameplayStatics.h"
 #include "../../Interfaces/BlinkingProviderInterface.h"
+#include "ProjectG_SGJNom2025/Character/Player/PlayableCharacter.h"
 
 void UEyesightOverlayWidget::NativeConstruct()
 {
@@ -35,7 +36,7 @@ void UEyesightOverlayWidget::BlurTimerTick()
 	if (!BackgroundBlur)
 		return;
 
-	if (!bHasShownBlinkHint && BackgroundBlur->GetBlurStrength() == 7.0f)
+	if (!bHasShownBlinkHint && BackgroundBlur->GetBlurStrength() == 6.0f)
 	{
 		ShowBlinkHint();
 		bHasShownBlinkHint = true;
@@ -44,6 +45,17 @@ void UEyesightOverlayWidget::BlurTimerTick()
 
 	if (BackgroundBlur->GetBlurStrength() >= BlurScreenTillThisStrength)
 	{
+		if (APlayerController* PCtrl = GetOwningPlayer())
+		{
+			if (APawn* Pawn = PCtrl->GetPawn())
+			{
+				if (APlayableCharacter* PlayableChar = Cast<APlayableCharacter>(Pawn))
+				{
+					PlayableChar->Die();
+				}
+			}
+		}
+		
 		ResetBlurTimer();
 	}
 
