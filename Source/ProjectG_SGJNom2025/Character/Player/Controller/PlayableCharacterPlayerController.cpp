@@ -238,6 +238,7 @@ void APlayableCharacterPlayerController::OnLoadLevel()
 	{
 		UE_LOG(LogTemp, Error, TEXT("SaveSubsystem not found!"));
 	}*/
+}
 void APlayableCharacterPlayerController::OnDeathTrigger()
 {
 	if (APlayableCharacter* PC = Cast<APlayableCharacter>(GetPawn()))
