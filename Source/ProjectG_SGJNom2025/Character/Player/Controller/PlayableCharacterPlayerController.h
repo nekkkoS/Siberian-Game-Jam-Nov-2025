@@ -96,4 +96,13 @@ protected:
 public:
 	void SetMouseSensitivity(const float Value) { MouseSensitivity = Value; }
 	float GetMouseSensitivity() const { return MouseSensitivity; }
+
+	
+	// ----- Смерть -----
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> DeathAction;
+
+	void OnDeathTrigger();
 };

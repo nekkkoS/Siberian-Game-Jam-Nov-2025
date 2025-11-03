@@ -37,14 +37,14 @@ private:
 	// ----- Звуки шагов -----
 
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, Category = "Audio | Footsteps")
 	UAudioComponent* FootstepAudioComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, Category = "Audio | Footsteps")
 	USoundBase* FootstepSound;
 
 	// Интервал между шагами
-	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, Category = "Audio | Footsteps")
 	float FootstepInterval = 0.7f;
 
 	// Время последнего шага
@@ -78,4 +78,28 @@ private:
 
 	UPROPERTY()
 	FVector DefaultCameraRelativeLocation;
+
+	
+	// ----- Смерть -----
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void Die();
+
+private:
+	// Таймер для задержки перед показом виджета смерти
+	FTimerHandle DeathWidgetTimerHandle;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "UI | Death")
+	TSubclassOf<UUserWidget> DeathWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* DeathWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio | Death")
+	UAudioComponent* DeathAudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio | Death")
+	USoundBase* DeathSound;
+	
 };
