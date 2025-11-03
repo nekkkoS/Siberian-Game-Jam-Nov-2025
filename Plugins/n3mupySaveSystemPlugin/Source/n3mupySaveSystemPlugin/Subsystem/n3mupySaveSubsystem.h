@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/SaveGame.h"
 #include "Kismet/GameplayStatics.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "n3mupySaveSubsystem.generated.h"
@@ -63,20 +62,27 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(SaveLog, Display, All);
 
+// Is subsystem ready delegates
+DECLARE_MULTICAST_DELEGATE(FOnSaveSystemReadySignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSaveSubsystemReadyBlueprintSignature);
+
 // C++ delegates
-	// Sync
+// Sync
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameLoadedSignature, USaveGame* /** Save type */)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGameSavedSignature, USaveGame* /** Save type */, bool /* bSuccess */)
-	// Async
+// Async
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameAsyncLoadedSignature, USaveGame* /** Save type */);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGameAsyncSavedSignature, USaveGame* /** Save type */, bool /* bSuccess */);
 
 // BP delegates
-	// Sync
+// Sync
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameLoadedBPSignature, USaveGame*, SaveType);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameSavedBPSignature, USaveGame*, SaveType, bool, bSuccess);
-	// Async
+
+// Async
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameAsyncLoadedBPSignature, USaveGame*, SaveType);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameAsyncSavedBPSignature, USaveGame*, SaveType, bool, bSuccess);
 
 /**
@@ -84,94 +90,134 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameAsyncSavedBPSignature, USaveGa
  * Subsystem for saving game data with usage of USaveGame. Designed for simple singleplayer games.\n
  * User should create their own USaveGame and cast to it in delegate callback functions.
  */
-UCLASS(meta = (ToolTip = "Subsystem for saving game data with usage of USaveGame. Designed for simple singleplayer games.\n User should create their own USaveGame and cast to it in delegate callback functions."))
+UCLASS(
+	meta = (ToolTip =
+		"Subsystem for saving game data with usage of USaveGame. Designed for simple singleplayer games.\n User should create their own USaveGame and cast to it in delegate callback functions."
+	))
 class N3MUPYSAVESYSTEMPLUGIN_API Un3mupySaveSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
 public:
-	/** Delegate for saving data to USaveGame. */
-	FOnGameSavedSignature OnGameSavedDelegate;
-	FOnGameAsyncSavedSignature OnGameAsyncSavedDelegate;
+	// Data Load Delegate
+    FOnGameLoadedSignature OnGameLoadedDelegate;
+    UPROPERTY(BlueprintAssignable, Category = "n3mupy | SaveSystem")
+    FOnGameLoadedBPSignature OnGameLoadedBlueprintDelegate;
 
-	// Async C++ delegates for callbacks
-	FAsyncLoadGameFromSlotDelegate AsyncLoadDelegate;
-	FAsyncSaveGameToSlotDelegate AsyncSaveDelegate;
-	
-	UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
-	virtual void LoadGameData(bool bIsAsync = false);
+    // Data persistence delegate  
+    FOnGameSavedSignature OnGameSavedDelegate;
+    UPROPERTY(BlueprintAssignable, Category = "n3mupy | SaveSystem")
+    FOnGameSavedBPSignature OnGameSavedBlueprintDelegate;
 
-	UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
-	virtual void SaveGameData(bool bIsAsync = false) const;
+    // Subsystem Readiness Delegate
+    FOnSaveSystemReadySignature OnSaveSystemReadyDelegate;
+    UPROPERTY(BlueprintAssignable, Category = "n3mupy | SaveSystem")
+    FOnSaveSubsystemReadyBlueprintSignature OnSaveSystemReadyBlueprintDelegate;
 
-	UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
-	virtual bool IsSaveGameExists(const FString& _SlotName, const int32 _UserIndex);
+    // ===== BASIC METHODS =====
+    
+    virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+    virtual void Deinitialize() override;
 
-	UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
-	virtual bool DeleteSavedGame(const FString& _SlotName, const int32 _UserIndex);
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    void LoadGameData(bool bIsAsync = false);
 
-	/** Deferred subscription for FOnGameLoadedSignature (C++ version). */
-	template <typename UserClass>
-	void SubscribeToOnGameLoadedDelegate(UserClass* Object, void (UserClass::*Func)(USaveGame*))
-	{
-		OnGameLoadedDelegate.AddUObject(Object, Func);
-		OnGameAsyncLoadedDelegate.AddUObject(Object, Func);
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    void SaveGameData(bool bIsAsync = false);
 
-		// If the save is already loaded - call ONLY the JUST added listener directly,
-		// without global Broadcast (so as not to double calls for the others)
-		if (bIsSaveLoaded && SavedData)
-		{
-			(Object->*Func)(SavedData);
-		}
-	}
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    bool IsSaveGameExists(const FString& SlotName = "", int32 UserIndex = -1);
 
-	/** Deferred subscription for OnGameLoadedBlueprintDelegate (BP version). */
-	UFUNCTION(BlueprintCallable, Category="n3mupy | SaveSystem", meta = (ToolTip = "Deferred subscription for OnGameLoadedBlueprintDelegate"))
-	void BindToOnGameLoadedDelegate(UObject* Listener, const FName& FunctionName);
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    bool DeleteSavedGame(const FString& SlotName = "", int32 UserIndex = -1);
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "n3mupy | SaveSystem")
-	TObjectPtr<USaveGame> SavedData;
+    // ===== SIMPLIFIED SUBSCRIPTION METHODS =====
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "n3mupy | SaveSystem")
-	FString SaveSlotName = "Save1";
+    /** The basic subscription method is where the user subscribes only to the availability and then consumes the data */
+    template <typename UserClass>
+    void SubscribeToSaveSystem(UserClass* Object, 
+                               void (UserClass::*OnReady)(),
+                               void (UserClass::*OnLoaded)(USaveGame*),
+                               void (UserClass::*OnSaved)(USaveGame*, bool))
+    {
+        if (!Object) return;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "n3mupy | SaveSystem")
-	int32 SaveUserIndex = 0;
-	
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Deinitialize() override;
+        UE_LOG(LogTemp, Warning, TEXT("SubscribeToSaveSystem: Setting up %s"), *Object->GetName());
+
+        // We sign off on the system's readiness
+        OnSaveSystemReadyDelegate.AddUObject(Object, OnReady);
+
+        // We are signing up for the main delegates
+        OnGameLoadedDelegate.AddUObject(Object, OnLoaded);
+        OnGameSavedDelegate.AddUObject(Object, OnSaved);
+
+        // If the system is already ready, we immediately call the ready callback.
+        if (bIsSubsystemReady)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("System already ready, calling OnReady immediately"));
+            (Object->*OnReady)();
+        }
+
+        // If the data has already been loaded, we immediately call the loading callback.
+        if (bIsSaveLoaded && SavedData)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Data already loaded, calling OnLoaded immediately"));
+            (Object->*OnLoaded)(SavedData);
+        }
+    }
+
+    /** Blueprint version of the simplified subscription */
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    void SubscribeToSaveSystemBlueprint(UObject* Listener, 
+                                       FName OnReadyFunction, 
+                                       FName OnLoadedFunction, 
+                                       FName OnSavedFunction);
+
+    // ===== GETTERS =====
+
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    USaveGame* GetSaveData() const { return SavedData; }
+
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    FString GetSaveSlotName() const { return SaveSlotName; }
+
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    void SetSaveSlotName(const FString& NewSlotName) { SaveSlotName = NewSlotName; }
+
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    int32 GetSaveUserIndex() const { return SaveUserIndex; }
+
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    void SetSaveUserIndex(int32 NewUserIndex) { SaveUserIndex = NewUserIndex; }
+
+    UFUNCTION(BlueprintCallable, Category = "n3mupy | SaveSystem")
+    bool IsSubsystemReady() const { return bIsSubsystemReady; }
 
 private:
+    // ===== INTERNAL DATA =====
+    
+    UPROPERTY()
+    TSubclassOf<USaveGame> SaveGameClass;
 
-	/** Delegate for notify subscribers about USaveGame is available for use.
-	 * For example loading player position at start of the game.
-	 */
-	FOnGameLoadedSignature OnGameLoadedDelegate;
-	FOnGameAsyncLoadedSignature OnGameAsyncLoadedDelegate;
+    UPROPERTY()
+    FString SaveSlotName;
 
-	/** Delegate for notify subscribers about USaveGame is available for use.
-	 * For example loading player position at start of the game.
-	 */
-	//UPROPERTY(BlueprintAssignable, Category="n3mupy | SaveSystem")
-	FOnGameLoadedBPSignature OnGameLoadedBlueprintDelegate;
-	FGameAsyncLoadedBPSignature OnGameAsyncLoadedBlueprintDelegate;
+    UPROPERTY()
+    int32 SaveUserIndex;
 
-	/** Delegate for saving data to USaveGame. */
-	UPROPERTY(BlueprintAssignable, Category="n3mupy | SaveSystem", meta = (ToolTip = "Delegate for saving data to USaveGame."))
-	FOnGameSavedBPSignature OnGameSavedBlueprintDelegate;
+    UPROPERTY()
+    USaveGame* SavedData = nullptr;
 
-	UPROPERTY(BlueprintAssignable, Category="n3mupy | SaveSystem", meta = (ToolTip = "Delegate for saving data to USaveGame."))
-	FGameAsyncSavedBPSignature OnGameAsyncSavedBlueprintDelegate;
-	
-	bool bIsSaveLoaded = false;
+    bool bIsSaveLoaded = false;
+    bool bIsSubsystemReady = false;
 
-	UFUNCTION()
-	void HandleAsyncLoad(const FString& SlotName, int32 UserIndex, USaveGame* LoadedData);
+    // ===== INTERNAL DATA =====
+    
+    void MarkSubsystemReady();
+    void HandleAsyncLoad(const FString& SlotName, int32 UserIndex, USaveGame* LoadedData);
+    void HandleAsyncSave(const FString& SlotName, int32 UserIndex, bool bSuccess);
 
-	UFUNCTION()
-	void HandleAsyncSave(const FString& InSlot, int32 InUserIdx, bool bSuccess);
-	
-public:
-	const USaveGame* GetGameData() const { return SavedData; }
+	// Async delegates for callbacks
+	FAsyncLoadGameFromSlotDelegate AsyncLoadDelegate;
+	FAsyncSaveGameToSlotDelegate AsyncSaveDelegate;
 };

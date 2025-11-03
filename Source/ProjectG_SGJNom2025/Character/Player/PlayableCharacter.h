@@ -89,7 +89,13 @@ public:
 	void SavePlayerState();
 
 private:
+	UFUNCTION()
+	void OnSaveSubsystemReady();
+	
+	UFUNCTION()
 	void UseSavedData(USaveGame* SavedData);
+
+	UFUNCTION()
 	void AddDataForSave(USaveGame* SavedData, bool bSuccess);
 	
 };

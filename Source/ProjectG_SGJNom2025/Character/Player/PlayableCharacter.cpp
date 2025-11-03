@@ -8,7 +8,7 @@
 #include "Controller/PlayableCharacterPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "n3mupySaveSystemPlugin/Subsystem/n3mupySaveSubsystem.h"
+#include "../Subsystem/n3mupySaveSubsystem.h"
 #include "ProjectG_SGJNom2025/SaveGame/DefaultSaveGame.h"
 
 APlayableCharacter::APlayableCharacter()
@@ -61,10 +61,12 @@ void APlayableCharacter::PossessedBy(AController* NewController)
 
 	if (Un3mupySaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<Un3mupySaveSubsystem>())
 	{
-		SaveSubsystem->SubscribeToOnGameLoadedDelegate(this, &APlayableCharacter::UseSavedData);
-		SaveSubsystem->OnGameSavedDelegate.AddUObject(this, &APlayableCharacter::AddDataForSave);
-		
-		SaveSubsystem->LoadGameData(false);
+		SaveSubsystem->SubscribeToSaveSystem(
+			this,
+			&APlayableCharacter::OnSaveSubsystemReady,
+			&APlayableCharacter::UseSavedData,
+			&APlayableCharacter::AddDataForSave
+		);
 	}
 }
 
@@ -106,6 +108,11 @@ void APlayableCharacter::SavePlayerState()
 		SaveSubsystem->SaveGameData(false);
 		UE_LOG(LogTemp, Warning, TEXT("Manual SaveGameData() triggered"));
 	}
+}
+
+void APlayableCharacter::OnSaveSubsystemReady()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Save system is READY!"));
 }
 
 void APlayableCharacter::UseSavedData(USaveGame* SavedData)

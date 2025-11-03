@@ -195,7 +195,7 @@ void APlayableCharacterPlayerController::OnPauseMenuToggle()
 
 void APlayableCharacterPlayerController::OnSaveGame()
 {
-	if (Un3mupySaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<Un3mupySaveSubsystem>())
+	/*if (Un3mupySaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<Un3mupySaveSubsystem>())
 	{
 		SaveSubsystem->SaveGameData();
 
@@ -211,12 +211,12 @@ void APlayableCharacterPlayerController::OnSaveGame()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("SaveSubsystem not found!"));
-	}
+	}*/
 }
 
 void APlayableCharacterPlayerController::OnLoadLevel()
 {
-	if (Un3mupySaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<Un3mupySaveSubsystem>())
+	/*if (Un3mupySaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<Un3mupySaveSubsystem>())
 	{
 		SaveSubsystem->LoadGameData();
 		UE_LOG(LogTemp, Log, TEXT("Game load requested."));
@@ -224,5 +224,5 @@ void APlayableCharacterPlayerController::OnLoadLevel()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("SaveSubsystem not found!"));
-	}
+	}*/
 }
