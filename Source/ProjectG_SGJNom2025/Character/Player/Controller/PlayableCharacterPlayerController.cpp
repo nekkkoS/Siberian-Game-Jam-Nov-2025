@@ -58,6 +58,8 @@ void APlayableCharacterPlayerController::SetupInputComponent()
 									   &APlayableCharacterPlayerController::BlinkEnd);
 	EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Completed, this,
 									   &APlayableCharacterPlayerController::OnPauseMenuToggle);
+	EnhancedInputComponent->BindAction(DeathAction, ETriggerEvent::Started, this,
+									   &APlayableCharacterPlayerController::OnDeathTrigger);
 }
 
 void APlayableCharacterPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -185,4 +187,10 @@ void APlayableCharacterPlayerController::OnPauseMenuToggle()
 			bShowMouseCursor = true;
 		}
 	}
+}
+
+void APlayableCharacterPlayerController::OnDeathTrigger()
+{
+	if (APlayableCharacter* PC = Cast<APlayableCharacter>(GetPawn()))
+		PC->Die();
 }
