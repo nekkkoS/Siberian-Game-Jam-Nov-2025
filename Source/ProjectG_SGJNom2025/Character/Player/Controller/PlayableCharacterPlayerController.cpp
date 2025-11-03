@@ -7,6 +7,8 @@
 #include "../../../UI/Eyesight/EyesightOverlayWidget.h"
 #include "../../../UI/PauseMenu/PauseMenuWidget.h"
 #include "Components/AudioComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "n3mupySaveSystemPlugin/Subsystem/n3mupySaveSubsystem.h"
 #include "ProjectG_SGJNom2025/Character/Player/PlayableCharacter.h"
 
 void APlayableCharacterPlayerController::BeginPlay()
@@ -58,6 +60,10 @@ void APlayableCharacterPlayerController::SetupInputComponent()
 									   &APlayableCharacterPlayerController::BlinkEnd);
 	EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Completed, this,
 									   &APlayableCharacterPlayerController::OnPauseMenuToggle);
+	EnhancedInputComponent->BindAction(SaveGameAction, ETriggerEvent::Started, this,
+									   &APlayableCharacterPlayerController::OnSaveGame);
+	EnhancedInputComponent->BindAction(LoadLevelAction, ETriggerEvent::Started, this,
+									   &APlayableCharacterPlayerController::OnLoadLevel);
 }
 
 void APlayableCharacterPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -184,5 +190,39 @@ void APlayableCharacterPlayerController::OnPauseMenuToggle()
 			SetInputMode(FInputModeUIOnly());
 			bShowMouseCursor = true;
 		}
+	}
+}
+
+void APlayableCharacterPlayerController::OnSaveGame()
+{
+	if (Un3mupySaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<Un3mupySaveSubsystem>())
+	{
+		SaveSubsystem->SaveGameData();
+
+		if (SaveSubsystem->IsSaveGameExists("Save1", 0))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Game saved successfully!"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to confirm save existence!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("SaveSubsystem not found!"));
+	}
+}
+
+void APlayableCharacterPlayerController::OnLoadLevel()
+{
+	if (Un3mupySaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<Un3mupySaveSubsystem>())
+	{
+		SaveSubsystem->LoadGameData();
+		UE_LOG(LogTemp, Log, TEXT("Game load requested."));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("SaveSubsystem not found!"));
 	}
 }

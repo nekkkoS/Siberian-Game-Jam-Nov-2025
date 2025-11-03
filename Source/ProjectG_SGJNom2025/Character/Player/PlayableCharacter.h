@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "PlayableCharacter.generated.h"
 
+class USaveGame;
+
 UCLASS()
 class PROJECTG_SGJNOM2025_API APlayableCharacter : public ACharacter
 {
@@ -78,4 +80,16 @@ private:
 
 	UPROPERTY()
 	FVector DefaultCameraRelativeLocation;
+
+
+	// ----- Сохранение игры -----
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void SavePlayerState();
+
+private:
+	void UseSavedData(USaveGame* SavedData);
+	void AddDataForSave(USaveGame* SavedData, bool bSuccess);
+	
 };
