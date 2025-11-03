@@ -14,4 +14,16 @@ UCLASS()
 class PROJECTG_SGJNOM2025_API UDeathScreen : public UUserWidget
 {
 	GENERATED_BODY()
+
+protected:
+
+	virtual void NativeConstruct() override;
+
+	virtual void NativeDestruct() override;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* RestartBtn;
+
+	UFUNCTION()
+	void OnRestartBtnClicked();
 };

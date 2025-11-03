@@ -61,6 +61,15 @@ protected:
 		meta = (ClampMin = 0.0f, ClampMax = 1.0f))
 	float BlurThresholdCriticalValue = 0.5f;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> DarkenEdgesImage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Eyesight | Blink")
+	float DarkenIncreaseRate = 0.05f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Eyesight | Blink")
+	float MaxDarkenOpacity = 0.8f;
+
 	virtual void NativeConstruct() override;
 	void BlurTimerTick();
 
