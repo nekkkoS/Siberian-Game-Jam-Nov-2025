@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "SplittedImageWidget.generated.h"
 
+class UImage;
+
 /**
  * 
  */
@@ -14,9 +16,24 @@ class PROJECTG_SGJNOM2025_API USplittedImageWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	USplittedImageWidget(const FObjectInitializer& Object);
+	
+	UFUNCTION(BlueprintCallable)
+	bool RevealRandomImagePart();
+	
+protected:
+	virtual void NativeConstruct() override;
+	
 private:
-	// TODO: Add 3 images, each representing a part of the whole image.
-	// By default, all images are hidden.
-	// By receiving delegate call, reveal one of image.
-	// Method to reveal random image in this widget.
+	TArray<TObjectPtr<UImage>> ImagesToReveal;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> ImagePart1;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> ImagePart2;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> ImagePart3;
 };

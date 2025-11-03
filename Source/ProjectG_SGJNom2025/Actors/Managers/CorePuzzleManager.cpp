@@ -131,6 +131,8 @@ void ACorePuzzleManager::OnEyesightWidgetReady(UEyesightOverlayWidget* EyesightW
 	}
 }
 
+// This callback called when blink ends. Check if blur threshold is reached and Player in trigger.
+// If yes, show random puzzle chip. And reset threshold status.
 void ACorePuzzleManager::OnBlinkEnded()
 {
 	if (!bBlurThresholdReached || !PlayerCharacterRef.IsValid())
@@ -140,7 +142,6 @@ void ACorePuzzleManager::OnBlinkEnded()
 	
 	if (IPuzzleChipProviderInterface* PuzzleChipProvider = Cast<IPuzzleChipProviderInterface>(PuzzleActorRef))
 	{
-		// Call method, when player ends blinking
 		PuzzleChipProvider->ShowRandomPuzzleChip();
 		// Also should reset local BlurThreshold local bool
 		bBlurThresholdReached = false;
@@ -157,11 +158,9 @@ void ACorePuzzleManager::OnBlinkEnded()
 // Need to get bool value, that threshold is reached, and save it here.
 void ACorePuzzleManager::BlurCriticalThresholdReached(bool bReached)
 {
-	// !NEED TESTS!
-	// TODO: Blur threshold is reached, can spawn puzzle chip. Then wait again till blur threshold is reached again.
-	// Add bool to reveal chip control.
+	// Get bool data from widget, about reaching critical threshold and set it to local bool.
 	UE_LOG(LogTemp, Warning, TEXT("Blur critical threshold reached in Puzzle Manager."));
-
+	
 	// Here set BlurThreshold local bool to value received from delegate
 	bBlurThresholdReached = bReached;
 	UE_LOG(LogTemp, Warning, TEXT("bBlurThresholdReached in PuzzleManager: %s"), bBlurThresholdReached ? TEXT("true") : TEXT("false"));

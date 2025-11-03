@@ -33,4 +33,5 @@ void ACombineChipsPuzzleActor::Tick(float DeltaTime)
 void ACombineChipsPuzzleActor::ShowRandomPuzzleChip()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ShowRandomPuzzleChip called in CombineChipsPuzzleActor."));
+	Cast<USplittedImageWidget>(PuzzleChipsWidgetComponent->GetWidget())->RevealRandomImagePart();
 }
