@@ -115,11 +115,17 @@ void APlayableCharacter::Die()
 				DeathWidget = CreateWidget<UUserWidget>(GetWorld(), DeathWidgetClass);
 
 			if (DeathWidget && !DeathWidget->IsInViewport())
-			{
 				DeathWidget->AddToViewport();
 
-				// Можно добавить плавное появление через анимацию виджета или через SetRenderOpacity
+			if (APlayerController* PCtrl = Cast<APlayerController>(GetController()))
+			{
+				FInputModeUIOnly InputMode;
+				InputMode.SetWidgetToFocus(DeathWidget->TakeWidget());
+				InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+				PCtrl->SetInputMode(InputMode);
+				PCtrl->bShowMouseCursor = true;
 			}
-		}, 0.5f, false); // например, виджет появится через 0.5 сек после смерти
+		}, 0.5f, false);
 	}
 }

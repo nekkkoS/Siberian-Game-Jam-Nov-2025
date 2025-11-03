@@ -5,6 +5,7 @@
 #include "Components/BackgroundBlur.h"
 #include "Kismet/GameplayStatics.h"
 #include "../../Interfaces/BlinkingProviderInterface.h"
+#include "Components/Image.h"
 #include "ProjectG_SGJNom2025/Character/Player/PlayableCharacter.h"
 
 void UEyesightOverlayWidget::NativeConstruct()
@@ -31,7 +32,7 @@ void UEyesightOverlayWidget::NativeConstruct()
 	StartBlurEffectTimer();
 }
 
-void UEyesightOverlayWidget::BlurTimerTick()
+/*void UEyesightOverlayWidget::BlurTimerTick()
 {
 	if (!BackgroundBlur)
 		return;
@@ -64,6 +65,57 @@ void UEyesightOverlayWidget::BlurTimerTick()
 
 	// Check if the blur strength has reached the critical threshold and broadcast the event.
 	if (!bBlurEffectThresholdReached && BackgroundBlur->GetBlurStrength() >= BlurThresholdCriticalValue * BlurScreenTillThisStrength)
+	{
+		bBlurEffectThresholdReached = true;
+		OnBlurEffectCriticalThresholdReachedDelegate.Broadcast(bBlurEffectThresholdReached);
+	}
+}*/
+
+void UEyesightOverlayWidget::BlurTimerTick()
+{
+	if (!BackgroundBlur)
+		return;
+
+	// Увеличиваем размытие
+	float NewBlur = BackgroundBlur->GetBlurStrength() + BlurIncreaseWithEachTimerTick;
+	BackgroundBlur->SetBlurStrength(NewBlur);
+
+	// --- Добавляем постепенное затемнение ---
+	if (DarkenEdgesImage)
+	{
+		float Progress = FMath::Clamp(NewBlur / BlurScreenTillThisStrength, 0.f, 1.f);
+		float TargetOpacity = Progress * MaxDarkenOpacity;
+		DarkenEdgesImage->SetOpacity(TargetOpacity);
+	}
+
+	// Показать подсказку моргания
+	if (!bHasShownBlinkHint && NewBlur >= 6.0f)
+	{
+		ShowBlinkHint();
+		bHasShownBlinkHint = true;
+		bCanBlinkNow = true;
+	}
+
+	// Смерть, если достигли максимума
+	if (NewBlur >= BlurScreenTillThisStrength)
+	{
+		if (APlayerController* PCtrl = GetOwningPlayer())
+		{
+			if (APawn* Pawn = PCtrl->GetPawn())
+			{
+				if (APlayableCharacter* PlayableChar = Cast<APlayableCharacter>(Pawn))
+				{
+					PlayableChar->Die();
+				}
+			}
+		}
+		ResetBlurTimer();
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Blur Strength: %f"), NewBlur);
+
+	// Проверка порога критичности
+	if (!bBlurEffectThresholdReached && NewBlur >= BlurThresholdCriticalValue * BlurScreenTillThisStrength)
 	{
 		bBlurEffectThresholdReached = true;
 		OnBlurEffectCriticalThresholdReachedDelegate.Broadcast(bBlurEffectThresholdReached);
@@ -103,6 +155,11 @@ void UEyesightOverlayWidget::ResetBlurEffect()
 	if (BackgroundBlur)
 	{
 		BackgroundBlur->SetBlurStrength(0.0f);
+	}
+
+	if (DarkenEdgesImage)
+	{
+		DarkenEdgesImage->SetOpacity(0.0f);
 	}
 }
 

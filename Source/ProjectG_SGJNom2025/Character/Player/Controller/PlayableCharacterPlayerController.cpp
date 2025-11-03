@@ -175,28 +175,18 @@ UEyesightOverlayWidget* APlayableCharacterPlayerController::GetEyesightOverlayWi
 
 void APlayableCharacterPlayerController::OnPauseMenuToggle()
 {
-	if (IsPaused())
+	SetPause(true);
+
+	if (!PauseMenuWidget && PauseMenuWidgetClass)
 	{
-		SetPause(false);
-		PauseMenuWidget->RemoveFromParent();
-		SetInputMode(FInputModeGameOnly());
-		bShowMouseCursor = false;
+		PauseMenuWidget = CreateWidget<UPauseMenuWidget>(this, PauseMenuWidgetClass);
 	}
-	else
+
+	if (PauseMenuWidget)
 	{
-		SetPause(true);
-
-		if (!PauseMenuWidget && PauseMenuWidgetClass)
-		{
-			PauseMenuWidget = CreateWidget<UPauseMenuWidget>(this, PauseMenuWidgetClass);
-		}
-
-		if (PauseMenuWidget)
-		{
-			PauseMenuWidget->AddToViewport();
-			SetInputMode(FInputModeUIOnly());
-			bShowMouseCursor = true;
-		}
+		PauseMenuWidget->AddToViewport();
+		SetInputMode(FInputModeUIOnly());
+		bShowMouseCursor = true;
 	}
 }
 

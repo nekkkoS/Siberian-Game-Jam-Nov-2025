@@ -4,6 +4,7 @@
 #include "DeathScreen.h"
 
 #include "Components/Button.h"
+#include "Kismet/GameplayStatics.h"
 
 void UDeathScreen::NativeConstruct()
 {
@@ -21,5 +22,14 @@ void UDeathScreen::NativeDestruct()
 
 void UDeathScreen::OnRestartBtnClicked()
 {
-	RemoveFromParent();
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC)
+		return;
+
+	// Скрываем курсор и сбрасываем ввод, чтобы вернуть управление после перезапуска
+	PC->bShowMouseCursor = false;
+	PC->SetInputMode(FInputModeGameOnly());
+
+	const FName CurrentLevelName = *UGameplayStatics::GetCurrentLevelName(this);
+	UGameplayStatics::OpenLevel(this, CurrentLevelName);
 }
