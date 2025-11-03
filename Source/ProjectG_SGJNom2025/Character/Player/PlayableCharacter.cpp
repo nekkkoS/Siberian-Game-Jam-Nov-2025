@@ -3,6 +3,7 @@
 
 #include "PlayableCharacter.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/AudioComponent.h"
 #include "Controller/PlayableCharacterPlayerController.h"
@@ -29,6 +30,10 @@ APlayableCharacter::APlayableCharacter()
 	FootstepAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("FootstepAudioComponent"));
 	FootstepAudioComponent->SetupAttachment(RootComponent);
 	FootstepAudioComponent->bAutoActivate = false;
+
+	DeathAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("DeathAudioComponent"));
+	DeathAudioComponent->SetupAttachment(RootComponent);
+	DeathAudioComponent->bAutoActivate = false;
 }
 
 void APlayableCharacter::Tick(float DeltaTime)
@@ -155,4 +160,33 @@ void APlayableCharacter::AddDataForSave(USaveGame* SavedData, bool bSuccess)
 	Save->PlayerData.PlayerRotation = GetControlRotation();
 
 	UE_LOG(LogTemp, Warning, TEXT("Player data prepared for saving"));
+}
+void APlayableCharacter::Die()
+{
+	// Отключаем управление
+	if (AController* Ctrl = GetController())
+		Ctrl->DisableInput(Cast<APlayerController>(Ctrl));
+
+	if (DeathAudioComponent && DeathSound)
+	{
+		DeathAudioComponent->SetSound(DeathSound);
+		DeathAudioComponent->Play();
+	}
+
+	// Настраиваем таймер для показа виджета
+	if (DeathWidgetClass)
+	{
+		GetWorld()->GetTimerManager().SetTimer(DeathWidgetTimerHandle, [this]()
+		{
+			if (!DeathWidget)
+				DeathWidget = CreateWidget<UUserWidget>(GetWorld(), DeathWidgetClass);
+
+			if (DeathWidget && !DeathWidget->IsInViewport())
+			{
+				DeathWidget->AddToViewport();
+
+				// Можно добавить плавное появление через анимацию виджета или через SetRenderOpacity
+			}
+		}, 0.5f, false); // например, виджет появится через 0.5 сек после смерти
+	}
 }

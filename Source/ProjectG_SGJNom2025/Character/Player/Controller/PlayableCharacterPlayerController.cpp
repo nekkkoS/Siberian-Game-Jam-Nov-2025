@@ -40,7 +40,8 @@ void APlayableCharacterPlayerController::BeginPlay()
 
 	if (EyesightOverlayWidget && !EyesightOverlayWidget->IsInViewport())
 	{
-		EyesightOverlayWidget->AddToViewport();	
+		EyesightOverlayWidget->AddToViewport();
+		OnEyesightOverlayReadyDelegate.Broadcast(EyesightOverlayWidget);
 	}
 }
 
@@ -64,6 +65,8 @@ void APlayableCharacterPlayerController::SetupInputComponent()
 									   &APlayableCharacterPlayerController::OnSaveGame);
 	EnhancedInputComponent->BindAction(LoadLevelAction, ETriggerEvent::Started, this,
 									   &APlayableCharacterPlayerController::OnLoadLevel);
+	EnhancedInputComponent->BindAction(DeathAction, ETriggerEvent::Started, this,
+									   &APlayableCharacterPlayerController::OnDeathTrigger);
 }
 
 void APlayableCharacterPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -166,6 +169,16 @@ FOnBlinkingEndedSignature& APlayableCharacterPlayerController::ProvideOnBlinking
 	return OnBlinkingEndedDelegate;
 }
 
+FOnEyesightOverlayReadySignature& APlayableCharacterPlayerController::ProvideOnEyesightOverlayReadyDelegate()
+{
+	return OnEyesightOverlayReadyDelegate;
+}
+
+UEyesightOverlayWidget* APlayableCharacterPlayerController::GetEyesightOverlayWidget_Implementation()
+{
+	return EyesightOverlayWidget;
+}
+
 void APlayableCharacterPlayerController::OnPauseMenuToggle()
 {
 	if (IsPaused())
@@ -225,4 +238,8 @@ void APlayableCharacterPlayerController::OnLoadLevel()
 	{
 		UE_LOG(LogTemp, Error, TEXT("SaveSubsystem not found!"));
 	}*/
+void APlayableCharacterPlayerController::OnDeathTrigger()
+{
+	if (APlayableCharacter* PC = Cast<APlayableCharacter>(GetPawn()))
+		PC->Die();
 }

@@ -18,7 +18,7 @@ UCLASS()
 class PROJECTG_SGJNOM2025_API APlayableCharacterPlayerController : public APlayerController, public IBlinkingProviderInterface
 {
 	GENERATED_BODY()
-
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -62,7 +62,6 @@ protected:
 private:
 	void BlinkStart();
 	void BlinkEnd();
-	virtual FOnBlinkingEndedSignature& ProvideOnBlinkingEndedDelegate() override;
 
 	UPROPERTY()
 	UUserWidget* BlinkOverlay;
@@ -74,7 +73,7 @@ private:
 	float BlinkStartTime = 0.f;
 
 	FOnBlinkingEndedSignature OnBlinkingEndedDelegate;
-
+	FOnEyesightOverlayReadySignature OnEyesightOverlayReadyDelegate;
 	
 	// ----- Pause -----
 
@@ -94,6 +93,9 @@ protected:
 	float MouseSensitivity = 1.0f;
 
 public:
+	virtual UEyesightOverlayWidget* GetEyesightOverlayWidget_Implementation() override;
+	virtual FOnBlinkingEndedSignature& ProvideOnBlinkingEndedDelegate() override;
+	virtual FOnEyesightOverlayReadySignature& ProvideOnEyesightOverlayReadyDelegate() override;
 	void SetMouseSensitivity(const float Value) { MouseSensitivity = Value; }
 	float GetMouseSensitivity() const { return MouseSensitivity; }
 
@@ -111,4 +113,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> LoadLevelAction;
+	// ----- Смерть -----
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> DeathAction;
+
+	void OnDeathTrigger();
 };
