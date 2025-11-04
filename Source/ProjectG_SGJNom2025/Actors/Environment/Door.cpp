@@ -2,6 +2,8 @@
 
 #include "Door.h"
 
+#include "Kismet/GameplayStatics.h"
+
 ADoor::ADoor()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -95,11 +97,18 @@ void ADoor::RotateDoor(float DeltaTime)
 	// Apply the new position and rotation
 	DoorMeshComponent->SetRelativeLocation(NewLocation);
 	DoorMeshComponent->SetRelativeRotation(NewRotation);
+
+	if (!bRotateSoundPlaying && DoorRotateSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, DoorRotateSound, GetActorLocation());
+		bRotateSoundPlaying = true;
+	}
     
 	// Check if rotation is complete.
 	if ((bIsOpening && RotationAlpha >= 1.0f) || (!bIsOpening && RotationAlpha <= 0.0f))
 	{
 		bIsRotating = false;
+		bRotateSoundPlaying = false;
 	}
 }
 
@@ -109,6 +118,12 @@ bool ADoor::Activate_Implementation()
 	{
 		bIsOpening = true;
 		bIsRotating = true;
+
+		if (DoorOpenSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, DoorOpenSound, GetActorLocation());
+		}
+		bRotateSoundPlaying = false;
 		
 		return true;
 	}
@@ -121,6 +136,13 @@ bool ADoor::Deactivate_Implementation()
 	{
 		bIsOpening = false;
 		bIsRotating = true;
+
+		if (DoorCloseSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, DoorCloseSound, GetActorLocation());
+		}
+
+		bRotateSoundPlaying = false;
 		
 		return true;
 	}

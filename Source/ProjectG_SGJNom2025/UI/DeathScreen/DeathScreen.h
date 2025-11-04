@@ -24,6 +24,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* RestartBtn;
 
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* ShowRestartBtnAnim;
+
 	UFUNCTION()
 	void OnRestartBtnClicked();
 };

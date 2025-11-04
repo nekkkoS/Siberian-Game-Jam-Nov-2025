@@ -7,8 +7,6 @@
 #include "../../../UI/Eyesight/EyesightOverlayWidget.h"
 #include "../../../UI/PauseMenu/PauseMenuWidget.h"
 #include "Components/AudioComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "n3mupySaveSystemPlugin/Subsystem/n3mupySaveSubsystem.h"
 #include "ProjectG_SGJNom2025/Character/Player/PlayableCharacter.h"
 
 void APlayableCharacterPlayerController::BeginPlay()

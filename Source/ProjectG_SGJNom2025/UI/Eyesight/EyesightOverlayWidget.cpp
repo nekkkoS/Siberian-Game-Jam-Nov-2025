@@ -95,6 +95,15 @@ void UEyesightOverlayWidget::OnBlinkingEnded()
 	StartBlurEffectTimer();
 }
 
+void UEyesightOverlayWidget::StopBlurEffect()
+{
+	if (BlurTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(BlurTimerHandle);
+		UE_LOG(LogTemp, Log, TEXT("Blur effect stopped."));
+	}
+}
+
 void UEyesightOverlayWidget::SetBlinkPromptVisibility(ESlateVisibility _Visibility)
 {
 	if (BlinkPrompt)
