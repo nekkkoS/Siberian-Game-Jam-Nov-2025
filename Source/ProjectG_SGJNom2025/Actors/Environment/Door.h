@@ -35,6 +35,15 @@ protected:
 	
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Door|Sound")
+	USoundBase* DoorOpenSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Door|Sound")
+	USoundBase* DoorCloseSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Door|Sound")
+	USoundBase* DoorRotateSound;
+
 private:
 	FVector InitialDoorLocation;
 	FRotator InitialDoorRotation;
@@ -49,4 +58,6 @@ private:
 	void RotateDoor(float DeltaTime);
 	virtual bool Activate_Implementation() override;
 	virtual bool Deactivate_Implementation() override;
+
+	bool bRotateSoundPlaying = false;
 };
