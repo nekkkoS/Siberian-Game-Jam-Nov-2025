@@ -45,7 +45,7 @@ void UEyesightOverlayWidget::BlurTimerTick()
 	EyesightClarity = Progress;
 	float TargetOpacity = Progress * MaxDarkenOpacity;
 	DarkenEdgesImage->SetOpacity(TargetOpacity);
-	VeinsImage->SetOpacity(FMath::Max(0.f, TargetOpacity - 0.15f));
+	VeinsImage->SetOpacity(TargetOpacity);
 
 	// Показать подсказку моргания
 	if (!bHasShownBlinkHint && NewBlur >= TimeForShowHint)
