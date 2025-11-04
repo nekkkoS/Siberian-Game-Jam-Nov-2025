@@ -32,64 +32,22 @@ void UEyesightOverlayWidget::NativeConstruct()
 	StartBlurEffectTimer();
 }
 
-/*void UEyesightOverlayWidget::BlurTimerTick()
-{
-	if (!BackgroundBlur)
-		return;
-
-	if (!bHasShownBlinkHint && BackgroundBlur->GetBlurStrength() == 6.0f)
-	{
-		ShowBlinkHint();
-		bHasShownBlinkHint = true;
-		bCanBlinkNow = true;
-	}
-
-	if (BackgroundBlur->GetBlurStrength() >= BlurScreenTillThisStrength)
-	{
-		if (APlayerController* PCtrl = GetOwningPlayer())
-		{
-			if (APawn* Pawn = PCtrl->GetPawn())
-			{
-				if (APlayableCharacter* PlayableChar = Cast<APlayableCharacter>(Pawn))
-				{
-					PlayableChar->Die();
-				}
-			}
-		}
-		
-		ResetBlurTimer();
-	}
-
-	BackgroundBlur->SetBlurStrength(BackgroundBlur->GetBlurStrength() + BlurIncreaseWithEachTimerTick);
-	UE_LOG(LogTemp, Warning, TEXT("Blur Strength: %f"), BackgroundBlur->GetBlurStrength());
-
-	// Check if the blur strength has reached the critical threshold and broadcast the event.
-	if (!bBlurEffectThresholdReached && BackgroundBlur->GetBlurStrength() >= BlurThresholdCriticalValue * BlurScreenTillThisStrength)
-	{
-		bBlurEffectThresholdReached = true;
-		OnBlurEffectCriticalThresholdReachedDelegate.Broadcast(bBlurEffectThresholdReached);
-	}
-}*/
-
 void UEyesightOverlayWidget::BlurTimerTick()
 {
 	if (!BackgroundBlur)
 		return;
-
-	// Увеличиваем размытие
+	
 	float NewBlur = BackgroundBlur->GetBlurStrength() + BlurIncreaseWithEachTimerTick;
 	BackgroundBlur->SetBlurStrength(NewBlur);
 
-	// --- Добавляем постепенное затемнение ---
-	if (DarkenEdgesImage)
-	{
-		float Progress = FMath::Clamp(NewBlur / BlurScreenTillThisStrength, 0.f, 1.f);
-		float TargetOpacity = Progress * MaxDarkenOpacity;
-		DarkenEdgesImage->SetOpacity(TargetOpacity);
-	}
+	// --- Добавляем постепенное затемнение и изображение вен ---
+	float Progress = FMath::Clamp(NewBlur / BlurScreenTillThisStrength, 0.f, 1.f);
+	float TargetOpacity = Progress * MaxDarkenOpacity;
+	DarkenEdgesImage->SetOpacity(TargetOpacity);
+	VeinsImage->SetOpacity(TargetOpacity - 0.15);
 
 	// Показать подсказку моргания
-	if (!bHasShownBlinkHint && NewBlur >= 6.0f)
+	if (!bHasShownBlinkHint && NewBlur >= TimeForShowHint)
 	{
 		ShowBlinkHint();
 		bHasShownBlinkHint = true;
@@ -160,6 +118,11 @@ void UEyesightOverlayWidget::ResetBlurEffect()
 	if (DarkenEdgesImage)
 	{
 		DarkenEdgesImage->SetOpacity(0.0f);
+	}
+
+	if (VeinsImage)
+	{
+		VeinsImage->SetOpacity(0.0f);
 	}
 }
 

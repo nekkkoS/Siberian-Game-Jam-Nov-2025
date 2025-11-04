@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ProjectG_SGJNom2025/Interfaces/GameEndProviderInterface.h"
 #include "CorePuzzleManager.generated.h"
 
 class UEyesightOverlayWidget;
 DECLARE_MULTICAST_DELEGATE(FOnTriggerPuzzleChipSpawnSignature);
 
 UCLASS()
-class PROJECTG_SGJNOM2025_API ACorePuzzleManager : public AActor
+class PROJECTG_SGJNOM2025_API ACorePuzzleManager : public AActor, public IGameEndProviderInterface
 {
 	GENERATED_BODY()
 
@@ -25,6 +26,7 @@ protected:
 	FTimerHandle CheckIfCanSpawnPuzzleChipTimerHandle;
 
 	TScriptInterface<class IBlinkingProviderInterface> BlinkingProviderInterface;
+	TScriptInterface<class IPuzzleChipProviderInterface> PuzzleChipProviderInterface;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "PuzzleManager")
 	TObjectPtr<AActor> PuzzleActorRef;
@@ -67,8 +69,17 @@ protected:
 	                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 private:
+	FOnGameEndSignature OnGameEndDelegate;
+	virtual FOnGameEndSignature& SubscribeToOnGameEndDelegate() override { return OnGameEndDelegate; }
+	
 	bool bBlurThresholdReached = false;
 	bool bEyeSightWidgetReady = false;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "PuzzleManager | Game End", meta = (AllowPrivateAccess = "true"))
+	bool bIsGameEndPuzzle = false;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "PuzzleManager | Game End", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<AActor> ActivatableRef;
 	
 	UFUNCTION()
 	void OnEyesightWidgetReady(UEyesightOverlayWidget* EyesightWidget);
@@ -78,4 +89,7 @@ private:
 	
 	UFUNCTION()
 	void BlurCriticalThresholdReached(bool bReached);
+
+	UFUNCTION()
+	void OnAllChipsCombined();
 };

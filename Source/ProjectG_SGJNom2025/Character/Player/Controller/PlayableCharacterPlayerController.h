@@ -113,11 +113,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> LoadLevelAction;
-	// ----- Смерть -----
-
-private:
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> DeathAction;
-
-	void OnDeathTrigger();
 };

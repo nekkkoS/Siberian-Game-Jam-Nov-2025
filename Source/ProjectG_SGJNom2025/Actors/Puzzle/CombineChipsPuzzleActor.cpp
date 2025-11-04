@@ -32,6 +32,16 @@ void ACombineChipsPuzzleActor::Tick(float DeltaTime)
 
 void ACombineChipsPuzzleActor::ShowRandomPuzzleChip()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ShowRandomPuzzleChip called in CombineChipsPuzzleActor."));
-	Cast<USplittedImageWidget>(PuzzleChipsWidgetComponent->GetWidget())->RevealRandomImagePart();
+	UE_LOG(LogTemp, Warning, TEXT("ACombineChipsPuzzleActor: ShowRandomPuzzleChip called in CombineChipsPuzzleActor."));
+	if (Cast<USplittedImageWidget>(PuzzleChipsWidgetComponent->GetWidget())->RevealRandomImagePart() == 0)
+	{
+		// All parts revealed, puzzle completed.
+		UE_LOG(LogTemp, Warning, TEXT("ACombineChipsPuzzleActor: All puzzle chips combined! Puzzle completed."));
+		OnAllChipsCombinedDelegate.Broadcast();
+	}
+}
+
+FOnAllChipsCombinedSignature& ACombineChipsPuzzleActor::SubscribeToOnAllChipsCombinedDelegate()
+{
+	return OnAllChipsCombinedDelegate;
 }

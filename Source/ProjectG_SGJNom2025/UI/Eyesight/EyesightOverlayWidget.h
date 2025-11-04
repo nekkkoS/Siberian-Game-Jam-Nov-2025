@@ -89,15 +89,15 @@ private:
 	TObjectPtr<class UBackgroundBlur> BackgroundBlur;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> EyeImage;
-
-	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> VeinsImage;
 
 	bool bHasShownBlinkHint = false;
 
 	// Чтобы запретить игроку моргнуть раньше времени
 	bool bCanBlinkNow = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Eyesight | Blink")
+	float TimeForShowHint = 5.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Eyesight | Blink")
 	TSubclassOf<UUserWidget> BlinkHintWidgetClass;
