@@ -99,6 +99,9 @@ public:
 	void SetMouseSensitivity(const float Value) { MouseSensitivity = Value; }
 	float GetMouseSensitivity() const { return MouseSensitivity; }
 
+	UFUNCTION(BlueprintCallable, Category="Blinking")
+	bool IsBlinking() const { return bIsBlinking; }
+
 	
 	// ----- Saving -----
 	
