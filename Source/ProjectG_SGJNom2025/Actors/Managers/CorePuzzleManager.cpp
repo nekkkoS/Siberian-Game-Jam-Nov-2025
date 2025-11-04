@@ -181,11 +181,6 @@ void ACorePuzzleManager::BlurCriticalThresholdReached(bool bReached)
 
 void ACorePuzzleManager::OnAllChipsCombined()
 {
-	if (!bIsGameEndPuzzle)
-	{
-		return;
-	}
-
 	UE_LOG(LogTemp, Warning, TEXT("PuzzleManager triggered OnAllChipsCombined()"));
 	if (ActivatableRef)
 	{
@@ -194,6 +189,9 @@ void ACorePuzzleManager::OnAllChipsCombined()
 			ActivatableInterface->Execute_Activate(ActivatableRef);
 		}
 	}
-	
-	OnGameEndDelegate.Broadcast(true);
+
+	if (bIsGameEndPuzzle)
+	{
+		OnGameEndDelegate.Broadcast(true);
+	}
 }
