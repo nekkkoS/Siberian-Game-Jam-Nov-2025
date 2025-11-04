@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "GameEndManager.generated.h"
 
+class UEndGameScreen;
+
 UCLASS()
 class PROJECTG_SGJNOM2025_API AGameEndManager : public AActor
 {
@@ -40,5 +42,11 @@ private:
 	UFUNCTION()
 	void OnGameEnd(bool bIsEnded);
 
-	
+	void ShowGameEndWidget();
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UEndGameScreen> EndGameScreenWidgetClass;
+
+	UPROPERTY()
+	UEndGameScreen* EndGameScreenWidget;
 };
