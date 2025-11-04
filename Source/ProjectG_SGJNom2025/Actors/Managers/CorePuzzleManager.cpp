@@ -8,6 +8,7 @@
 #include "../../UI/Eyesight/EyesightOverlayWidget.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "../../Interfaces/ActivatableInterface.h"
 
 ACorePuzzleManager::ACorePuzzleManager()
 {
@@ -44,15 +45,27 @@ void ACorePuzzleManager::BeginPlay()
 		.AddUObject(this, &ACorePuzzleManager::OnBlinkEnded);
 	}*/
 
+	if (PuzzleActorRef)
+	{
+		PuzzleChipProviderInterface.SetObject(PuzzleActorRef);
+		PuzzleChipProviderInterface.SetInterface(Cast<IPuzzleChipProviderInterface>(PuzzleActorRef));
+	}
+
+	if (PuzzleChipProviderInterface)
+	{
+		PuzzleChipProviderInterface->SubscribeToOnAllChipsCombinedDelegate().AddUObject(
+			this, &ACorePuzzleManager::OnAllChipsCombined);
+	}
+
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 	{
 		BlinkingProviderInterface.SetObject(PC);
 		BlinkingProviderInterface.SetInterface(Cast<IBlinkingProviderInterface>(PC));
 
 		BlinkingProviderInterface->ProvideOnEyesightOverlayReadyDelegate()
-		.AddUObject(this, &ACorePuzzleManager::OnEyesightWidgetReady);
+		                         .AddUObject(this, &ACorePuzzleManager::OnEyesightWidgetReady);
 		BlinkingProviderInterface->ProvideOnBlinkingEndedDelegate()
-		.AddUObject(this, &ACorePuzzleManager::OnBlinkEnded);
+		                         .AddUObject(this, &ACorePuzzleManager::OnBlinkEnded);
 	}
 }
 
@@ -139,29 +152,48 @@ void ACorePuzzleManager::OnBlinkEnded()
 	{
 		return;
 	}
-	
-	if (IPuzzleChipProviderInterface* PuzzleChipProvider = Cast<IPuzzleChipProviderInterface>(PuzzleActorRef))
+
+	if (PuzzleChipProviderInterface)
 	{
-		PuzzleChipProvider->ShowRandomPuzzleChip();
+		PuzzleChipProviderInterface->ShowRandomPuzzleChip();
 		// Also should reset local BlurThreshold local bool
 		bBlurThresholdReached = false;
-		
+
 		// Also set bThreshold from widget to false here
 		if (bEyeSightWidgetReady)
 		{
 			BlinkingProviderInterface->Execute_GetEyesightOverlayWidget(BlinkingProviderInterface.GetObject())
-			->SetBlurEffectThresholdReached(false);
+			                         ->SetBlurEffectThresholdReached(false);
 		}
 	}
 }
 
-// Need to get bool value, that threshold is reached, and save it here.
 void ACorePuzzleManager::BlurCriticalThresholdReached(bool bReached)
 {
 	// Get bool data from widget, about reaching critical threshold and set it to local bool.
 	UE_LOG(LogTemp, Warning, TEXT("Blur critical threshold reached in Puzzle Manager."));
-	
+
 	// Here set BlurThreshold local bool to value received from delegate
 	bBlurThresholdReached = bReached;
-	UE_LOG(LogTemp, Warning, TEXT("bBlurThresholdReached in PuzzleManager: %s"), bBlurThresholdReached ? TEXT("true") : TEXT("false"));
+	UE_LOG(LogTemp, Warning, TEXT("bBlurThresholdReached in PuzzleManager: %s"),
+	       bBlurThresholdReached ? TEXT("true") : TEXT("false"));
+}
+
+void ACorePuzzleManager::OnAllChipsCombined()
+{
+	if (!bIsGameEndPuzzle)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("PuzzleManager triggered OnAllChipsCombined()"));
+	if (ActivatableRef)
+	{
+		if (const IActivatableInterface* ActivatableInterface = Cast<IActivatableInterface>(ActivatableRef))
+		{
+			ActivatableInterface->Execute_Activate(ActivatableRef);
+		}
+	}
+	
+	OnGameEndDelegate.Broadcast(true);
 }

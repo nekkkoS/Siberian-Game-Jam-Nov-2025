@@ -20,13 +20,14 @@ public:
 	USplittedImageWidget(const FObjectInitializer& Object);
 	
 	UFUNCTION(BlueprintCallable)
-	bool RevealRandomImagePart();
+	int32 RevealRandomImagePart();
 	
 protected:
 	virtual void NativeConstruct() override;
 	
 private:
 	TArray<TObjectPtr<UImage>> ImagesToReveal;
+	int32 RemainingImagesCount = 0;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> ImagePart1;

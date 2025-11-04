@@ -19,13 +19,15 @@ void USplittedImageWidget::NativeConstruct()
 	ImagesToReveal.Add(ImagePart1);
 	ImagesToReveal.Add(ImagePart2);
 	ImagesToReveal.Add(ImagePart3);
+
+	RemainingImagesCount = ImagesToReveal.Num();
 }
 
-bool USplittedImageWidget::RevealRandomImagePart()
+int32 USplittedImageWidget::RevealRandomImagePart()
 {
 	if (ImagesToReveal.IsEmpty())
 	{
-		return false;
+		return 0;
 	}
 
 	const int32 RandomIndex = FMath::RandRange(0, ImagesToReveal.Num() - 1);
@@ -33,8 +35,10 @@ bool USplittedImageWidget::RevealRandomImagePart()
 	{
 		RandomImage->SetVisibility(ESlateVisibility::Visible);
 		ImagesToReveal.RemoveAt(RandomIndex);
-		return true;
+		--RemainingImagesCount;
+		
+		return RemainingImagesCount;
 	}
 
-	return false;
+	return 0;
 }

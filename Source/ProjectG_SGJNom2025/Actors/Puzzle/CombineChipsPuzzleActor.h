@@ -30,4 +30,8 @@ protected:
 	
 	virtual void BeginPlay() override;
 	virtual void ShowRandomPuzzleChip() override;
+	virtual FOnAllChipsCombinedSignature& SubscribeToOnAllChipsCombinedDelegate() override;
+
+private:
+	FOnAllChipsCombinedSignature OnAllChipsCombinedDelegate;
 };

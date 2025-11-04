@@ -13,6 +13,8 @@ class UPuzzleChipProviderInterface : public UInterface
 	GENERATED_BODY()
 };
 
+DECLARE_MULTICAST_DELEGATE(FOnAllChipsCombinedSignature);
+
 /**
  * 
  */
@@ -22,4 +24,5 @@ class PROJECTG_SGJNOM2025_API IPuzzleChipProviderInterface
 
 public:
 	virtual void ShowRandomPuzzleChip() = 0;
+	virtual FOnAllChipsCombinedSignature& SubscribeToOnAllChipsCombinedDelegate() = 0;
 };
