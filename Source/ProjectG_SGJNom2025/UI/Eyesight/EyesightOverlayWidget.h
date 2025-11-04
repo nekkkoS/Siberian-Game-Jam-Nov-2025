@@ -40,6 +40,13 @@ public:
 	void HideBlinkHint();
 
 	bool GetCanBlinkNow() const { return bCanBlinkNow; }
+
+	UPROPERTY(BlueprintReadOnly, Category = "Eyesight | Blink")
+	float EyesightClarity = 0.0f;
+
+	/** Возвращает степень закрытости глаз (0 — чистое зрение, 1 — смерть) */
+	UFUNCTION(BlueprintPure, Category = "Eyesight | Blink")
+	float GetEyesightClarity() const { return EyesightClarity; }
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Eyesight | Blink")

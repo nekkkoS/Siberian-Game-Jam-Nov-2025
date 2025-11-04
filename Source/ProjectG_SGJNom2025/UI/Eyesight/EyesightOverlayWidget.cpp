@@ -42,6 +42,7 @@ void UEyesightOverlayWidget::BlurTimerTick()
 
 	// --- Добавляем постепенное затемнение и изображение вен ---
 	float Progress = FMath::Clamp(NewBlur / BlurScreenTillThisStrength, 0.f, 1.f);
+	EyesightClarity = Progress;
 	float TargetOpacity = Progress * MaxDarkenOpacity;
 	DarkenEdgesImage->SetOpacity(TargetOpacity);
 	VeinsImage->SetOpacity(TargetOpacity - 0.15);
