@@ -45,7 +45,7 @@ void UEyesightOverlayWidget::BlurTimerTick()
 	EyesightClarity = Progress;
 	float TargetOpacity = Progress * MaxDarkenOpacity;
 	DarkenEdgesImage->SetOpacity(TargetOpacity);
-	VeinsImage->SetOpacity(TargetOpacity - 0.15);
+	VeinsImage->SetOpacity(FMath::Max(0.f, TargetOpacity - 0.15f));
 
 	// Показать подсказку моргания
 	if (!bHasShownBlinkHint && NewBlur >= TimeForShowHint)
@@ -85,6 +85,7 @@ void UEyesightOverlayWidget::OnBlinkingEnded()
 {
 	ResetBlurEffect();
 	ResetBlurTimer();
+	EyesightClarity = 0.0f;
 	bBlurEffectThresholdReached = false;
 	//OnBlurEffectCriticalThresholdReachedDelegate.Broadcast(bBlurEffectThresholdReached);
 	StartBlurEffectTimer();
