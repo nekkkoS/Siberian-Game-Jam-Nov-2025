@@ -11,6 +11,11 @@ void UDeathScreen::NativeConstruct()
 	Super::NativeConstruct();
 
 	RestartBtn->OnClicked.AddDynamic(this, &UDeathScreen::OnRestartBtnClicked);
+
+	if (ShowRestartBtnAnim)
+	{
+		PlayAnimation(ShowRestartBtnAnim);
+	}
 }
 
 void UDeathScreen::NativeDestruct()

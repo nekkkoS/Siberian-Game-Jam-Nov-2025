@@ -115,5 +115,8 @@ private:
 public:
 	void SetBlurEffectThresholdReached(const bool bReached) { bBlurEffectThresholdReached = bReached; }
 	bool GetBlurEffectThresholdReached() const { return bBlurEffectThresholdReached; }
+
+	UFUNCTION(BlueprintCallable, Category="Eyesight | Blink")
+	void StopBlurEffect();
 	
 };

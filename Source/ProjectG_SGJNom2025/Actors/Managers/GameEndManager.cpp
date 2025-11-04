@@ -4,6 +4,10 @@
 
 #include "../../Interfaces/GameEndProviderInterface.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "ProjectG_SGJNom2025/Character/Player/Controller/PlayableCharacterPlayerController.h"
+#include "ProjectG_SGJNom2025/UI/EndGameScreen/EndGameScreen.h"
+#include "ProjectG_SGJNom2025/UI/Eyesight/EyesightOverlayWidget.h"
 
 AGameEndManager::AGameEndManager()
 {
@@ -52,16 +56,49 @@ void AGameEndManager::OnGameEnd(bool bIsEnded)
 	bIsGameEnded = bIsEnded;
 }
 
-void AGameEndManager::OnGameEndTriggerStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AGameEndManager::ShowGameEndWidget()
 {
+	APlayerController* PCtrl = UGameplayStatics::GetPlayerController(this, 0);
+	if (!PCtrl)
+		return;
+
+	APlayableCharacterPlayerController* DefaultPCtrl = Cast<APlayableCharacterPlayerController>(PCtrl);
+	if (!DefaultPCtrl)
+		return;
+
+	if (UEyesightOverlayWidget* EyesightWidget = DefaultPCtrl->GetEyesightOverlayWidget_Implementation())
+	{
+		EyesightWidget->StopBlurEffect();
+	}
+	
+	if (!EndGameScreenWidget && EndGameScreenWidgetClass)
+	{
+		EndGameScreenWidget = CreateWidget<UEndGameScreen>(DefaultPCtrl, EndGameScreenWidgetClass);
+	}
+
+	if (!EndGameScreenWidget)
+		return;
+
+	FInputModeUIOnly InputMode;
+	InputMode.SetWidgetToFocus(EndGameScreenWidget->TakeWidget());
+	DefaultPCtrl->SetInputMode(InputMode);
+	DefaultPCtrl->bShowMouseCursor = true;
+	
+	EndGameScreenWidget->AddToViewport();
+	EndGameScreenWidget->PlayEndGameSequence();
+}
+
+void AGameEndManager::OnGameEndTriggerStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// ShowGameEndWidget();
+	
 	if (!bIsGameEnded)
 	{
 		return;
 	}
 
-	// TODO: Show Game End Widget here.
-	UE_LOG(LogTemp, Warning, TEXT("Should show Game End Widget now. (Widget is not impemented yet"));
+	ShowGameEndWidget();
 }
 
 void AGameEndManager::OnGameEndTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
