@@ -49,4 +49,7 @@ private:
 
 	UPROPERTY()
 	UEndGameScreen* EndGameScreenWidget;
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	USoundBase* EndGameMusic;
 };
