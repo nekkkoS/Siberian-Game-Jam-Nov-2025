@@ -100,6 +100,19 @@ public:
 	float GetMouseSensitivity() const { return MouseSensitivity; }
 
 	
+	// ----- Saving -----
+	
+private:
+
+	void OnSaveGame();
+
+	void OnLoadLevel();
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> SaveGameAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> LoadLevelAction;
 	// ----- Смерть -----
 
 private:

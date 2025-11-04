@@ -9,6 +9,8 @@
 #include "Controller/PlayableCharacterPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "../Subsystem/n3mupySaveSubsystem.h"
+#include "ProjectG_SGJNom2025/SaveGame/DefaultSaveGame.h"
 
 APlayableCharacter::APlayableCharacter()
 {
@@ -61,6 +63,16 @@ void APlayableCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	PlayerControllerRef = Cast<APlayableCharacterPlayerController>(NewController);
+
+	if (Un3mupySaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<Un3mupySaveSubsystem>())
+	{
+		SaveSubsystem->SubscribeToSaveSystem(
+			this,
+			&APlayableCharacter::OnSaveSubsystemReady,
+			&APlayableCharacter::UseSavedData,
+			&APlayableCharacter::AddDataForSave
+		);
+	}
 }
 
 void APlayableCharacter::ExecuteHeadBob(const float DeltaTime)
@@ -94,6 +106,61 @@ void APlayableCharacter::ExecuteHeadBob(const float DeltaTime)
 	}
 }
 
+void APlayableCharacter::SavePlayerState()
+{
+	if (Un3mupySaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<Un3mupySaveSubsystem>())
+	{
+		SaveSubsystem->SaveGameData(false);
+		UE_LOG(LogTemp, Warning, TEXT("Manual SaveGameData() triggered"));
+	}
+}
+
+void APlayableCharacter::OnSaveSubsystemReady()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Save system is READY!"));
+}
+
+void APlayableCharacter::UseSavedData(USaveGame* SavedData)
+{
+	UDefaultSaveGame* Save = Cast<UDefaultSaveGame>(SavedData);
+	if (!Save)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UseSavedData: Cast failed"));
+		return;
+	}
+
+	if (!Save->PlayerData.PlayerTransform.Equals(FTransform::Identity))
+	{
+		SetActorTransform(Save->PlayerData.PlayerTransform);
+		if (AController* Ctrl = GetController())
+		{
+			Ctrl->SetControlRotation(Save->PlayerData.PlayerRotation);
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Player transform loaded from save"));
+	}
+}
+
+void APlayableCharacter::AddDataForSave(USaveGame* SavedData, bool bSuccess)
+{
+	if (!bSuccess)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AddDataForSave: Save failed!"));
+		return;
+	}
+
+	UDefaultSaveGame* Save = Cast<UDefaultSaveGame>(SavedData);
+	if (!Save)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AddDataForSave: Cast failed"));
+		return;
+	}
+	
+	Save->PlayerData.PlayerTransform = GetActorTransform();
+	Save->PlayerData.PlayerRotation = GetControlRotation();
+
+	UE_LOG(LogTemp, Warning, TEXT("Player data prepared for saving"));
+}
 void APlayableCharacter::Die()
 {
 	// Отключаем управление
@@ -115,11 +182,17 @@ void APlayableCharacter::Die()
 				DeathWidget = CreateWidget<UUserWidget>(GetWorld(), DeathWidgetClass);
 
 			if (DeathWidget && !DeathWidget->IsInViewport())
-			{
 				DeathWidget->AddToViewport();
 
-				// Можно добавить плавное появление через анимацию виджета или через SetRenderOpacity
+			if (APlayerController* PCtrl = Cast<APlayerController>(GetController()))
+			{
+				FInputModeUIOnly InputMode;
+				InputMode.SetWidgetToFocus(DeathWidget->TakeWidget());
+				InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+				PCtrl->SetInputMode(InputMode);
+				PCtrl->bShowMouseCursor = true;
 			}
-		}, 0.5f, false); // например, виджет появится через 0.5 сек после смерти
+		}, 0.5f, false);
 	}
 }

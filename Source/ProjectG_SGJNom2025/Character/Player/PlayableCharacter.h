@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "PlayableCharacter.generated.h"
 
+class USaveGame;
+
 UCLASS()
 class PROJECTG_SGJNOM2025_API APlayableCharacter : public ACharacter
 {
@@ -79,14 +81,19 @@ private:
 	UPROPERTY()
 	FVector DefaultCameraRelativeLocation;
 
+	// ----- Сохранение -----
+
+	UFUNCTION()
+	void OnSaveSubsystemReady();
 	
+	UFUNCTION()
+	void UseSavedData(USaveGame* SavedData);
+
+	UFUNCTION()
+	void AddDataForSave(USaveGame* SavedData, bool bSuccess);
+
 	// ----- Смерть -----
 
-public:
-	UFUNCTION(BlueprintCallable)
-	void Die();
-
-private:
 	// Таймер для задержки перед показом виджета смерти
 	FTimerHandle DeathWidgetTimerHandle;
 	
@@ -101,5 +108,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Audio | Death")
 	USoundBase* DeathSound;
-	
+
+public:
+	// ----- Смерть -----
+	UFUNCTION(BlueprintCallable)
+	void Die();
+
+	UFUNCTION(BlueprintCallable)
+	void SavePlayerState();
 };
