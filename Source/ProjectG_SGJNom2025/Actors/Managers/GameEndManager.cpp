@@ -86,6 +86,11 @@ void AGameEndManager::ShowGameEndWidget()
 	
 	EndGameScreenWidget->AddToViewport();
 	EndGameScreenWidget->PlayEndGameSequence();
+
+	if (EndGameMusic)
+	{
+		UGameplayStatics::PlaySound2D(this, EndGameMusic);
+	}
 }
 
 void AGameEndManager::OnGameEndTriggerStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
