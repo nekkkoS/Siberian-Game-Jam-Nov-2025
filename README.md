@@ -2,6 +2,8 @@
 **Truth hurts more than fear.** <br>
 A short psychological horror about the burden of remembering. <br>
 
+![alt text](Screenshots/Icon.png)
+
 Controls: <br>
 W - Move forward <br>
 A - Move Left <br>
