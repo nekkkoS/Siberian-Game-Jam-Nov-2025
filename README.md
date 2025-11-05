@@ -18,3 +18,5 @@ nekkkos - Programmer <br>
 xdimx - Game Designer, Level Designer <br>
 atomicdeconstructor - Sound Designer <br>
 bad_boy_machine - 3D Art <br>
+
+[Gameplay Video](https://www.youtube.com/watch?v=6naGOxkbHPU)
