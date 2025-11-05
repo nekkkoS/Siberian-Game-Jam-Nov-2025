@@ -11,8 +11,8 @@ Esc, P - Pause <br>
 Space - Action <br>
 
 Creators (Discord). <br>
-@n3mupy - Programmer, 2D-art <br>
-@nekkkos - Programmer <br>
-@xdimx - Game Designer, Level Designer <br>
-@atomicdeconstructor - Sound Designer <br>
-@bad_boy_machine - 3D Art <br>
+n3mupy - Programmer, 2D-art <br>
+nekkkos - Programmer <br>
+xdimx - Game Designer, Level Designer <br>
+atomicdeconstructor - Sound Designer <br>
+bad_boy_machine - 3D Art <br>
