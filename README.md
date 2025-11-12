@@ -7,8 +7,8 @@ A short psychological horror about the burden of remembering. <br>
 Controls: <br>
 W - Move forward <br>
 A - Move Left <br>
-S - Move Right <br>
-D - Move Backward <br>
+S - Move Backward <br>
+D - Move Right <br>
 Esc, P - Pause <br>
 Space - Action <br>
 
